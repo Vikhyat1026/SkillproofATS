@@ -3,6 +3,9 @@ from pydantic import BaseModel
 from ai_engine import calculate_match
 from achievement_engine import calculate_achievement_score
 from github_service import get_repo_count
+from fastapi import UploadFile, File
+from resume_parser import extract_text_from_pdf
+
 
 
 app = FastAPI(title="SkillProof ATS")
@@ -20,11 +23,33 @@ class AnalyzeRequest(BaseModel):
 @app.get("/")
 def home():
     return {"message": "SkillProof ATS Backend Running "}
+
 @app.post("/match-score")
 def match_score(data: MatchRequest):
     score = calculate_match(data.resume_text, data.job_description)
     return {"similarity_score": score}
+
 @app.post("/analyze")
+async def analyze_pdf(
+    file: UploadFile = File(...),
+    job_description: str = "",
+    background_type: str = "non-tech",
+    github_username: str | None = None
+):
+    # PDF text extraction
+    resume_text = extract_text_from_pdf(file.file)
+
+    # Existing AnalyzeRequest model reuse
+    data = AnalyzeRequest(
+        resume_text=resume_text,
+        job_description=job_description,
+        background_type=background_type,
+        github_username=github_username
+    )
+
+    # Existing analyze logic reuse
+    return analyze_candidate(data)
+
 def analyze_candidate(data: AnalyzeRequest):
 
     # Semantic Score
