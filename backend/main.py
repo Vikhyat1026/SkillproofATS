@@ -1,17 +1,22 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
+
 from ai_engine import calculate_match
 from achievement_engine import calculate_achievement_score
-from github_service import get_repo_count
-from fastapi import UploadFile, File
+from github_service import analyze_github_profile
 from resume_parser import extract_text_from_pdf
-
-
+from insight_engine import generate_ai_insights
 
 app = FastAPI(title="SkillProof ATS")
+
+
+# ---------- Request Models ----------
+
 class MatchRequest(BaseModel):
     resume_text: str
     job_description: str
+
+
 class AnalyzeRequest(BaseModel):
     resume_text: str
     job_description: str
@@ -19,16 +24,20 @@ class AnalyzeRequest(BaseModel):
     github_username: str | None = None
 
 
+# ---------- Routes ----------
 
 @app.get("/")
 def home():
-    return {"message": "SkillProof ATS Backend Running "}
+    return {"message": "SkillProof ATS Backend Running"}
+
 
 @app.post("/match-score")
 def match_score(data: MatchRequest):
     score = calculate_match(data.resume_text, data.job_description)
     return {"similarity_score": score}
 
+
+# PDF Upload Endpoint
 @app.post("/analyze")
 async def analyze_pdf(
     file: UploadFile = File(...),
@@ -36,10 +45,11 @@ async def analyze_pdf(
     background_type: str = "non-tech",
     github_username: str | None = None
 ):
-    # PDF text extraction
+
+    # Extract resume text from PDF
     resume_text = extract_text_from_pdf(file.file)
 
-    # Existing AnalyzeRequest model reuse
+    # Create AnalyzeRequest object
     data = AnalyzeRequest(
         resume_text=resume_text,
         job_description=job_description,
@@ -47,8 +57,10 @@ async def analyze_pdf(
         github_username=github_username
     )
 
-    # Existing analyze logic reuse
     return analyze_candidate(data)
+
+
+# ---------- Core Logic ----------
 
 def analyze_candidate(data: AnalyzeRequest):
 
@@ -63,26 +75,12 @@ def analyze_candidate(data: AnalyzeRequest):
         data.resume_text
     )
 
-    # GitHub Score (optional)
+    # GitHub Score
     github_score = 0.0
     if data.background_type.lower() == "tech" and data.github_username:
-        github_score = get_repo_count(data.github_username)
+        github_score = analyze_github_profile(data.github_username)
 
-    # Insight Generation
-    insights = []
-
-    if semantic_score > 0.5:
-        insights.append("Strong semantic match with job role")
-
-    if achievement_score > 0.3:
-        insights.append("Leadership or measurable achievements detected")
-
-    if data.background_type.lower() == "tech":
-        insights.append("Technical profile detected")
-    else:
-        insights.append("Non-technical profile evaluated via achievement signals")
-
-    # Adaptive Logic
+    # Adaptive Weight Logic
     if data.background_type.lower() == "tech":
         final_score = (
             0.6 * semantic_score +
@@ -95,8 +93,15 @@ def analyze_candidate(data: AnalyzeRequest):
             0.4 * achievement_score
         )
 
-    # Return response 
-    # Convert to Percentage
+    # AI Insight Engine (NEW)
+    ai_insights = generate_ai_insights(
+        semantic_score,
+        achievement_score,
+        github_score,
+        data.background_type.lower()
+    )
+
+    # Convert Scores to Percentage
     semantic_pct = int(semantic_score * 100)
     achievement_pct = int(achievement_score * 100)
     github_pct = int(github_score * 100)
@@ -109,13 +114,14 @@ def analyze_candidate(data: AnalyzeRequest):
         match_level = "Moderate Match"
     else:
         match_level = "Low Match"
+
     return {
-    "overall_match": f"{final_pct}%",
-    "match_level": match_level,
-    "breakdown": {
-        "semantic_fit": f"{semantic_pct}%",
-        "achievement_strength": f"{achievement_pct}%",
-        "github_strength": f"{github_pct}%"
-    },
-    "insights": insights
-}
+        "overall_match": f"{final_pct}%",
+        "match_level": match_level,
+        "breakdown": {
+            "semantic_fit": f"{semantic_pct}%",
+            "achievement_strength": f"{achievement_pct}%",
+            "github_strength": f"{github_pct}%"
+        },
+        "insights": ai_insights
+    }
