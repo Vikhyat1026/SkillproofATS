@@ -3,36 +3,49 @@ from datetime import datetime, timezone
 
 GITHUB_API = "https://api.github.com"
 
+HEADERS = {
+    "Accept": "application/vnd.github+json",
+    "User-Agent": "SkillProofATS"
+}
+
 
 def get_user_repos(username: str):
     """
     Fetch all public repos of a user
     """
     url = f"{GITHUB_API}/users/{username}/repos"
-    response = requests.get(url)
 
-    if response.status_code != 200:
+    try:
+        response = requests.get(url, headers=HEADERS, timeout=10)
+        response.raise_for_status()
+        return response.json()
+
+    except requests.exceptions.RequestException as e:
+        print(f"GitHub repo fetch failed: {e}")
         return []
-
-    return response.json()
 
 
 def get_commit_count(username: str, repo_name: str):
     """
-    Fetch commit count for a repo (simple length based)
+    Fetch commit count for a repo
     NOTE: GitHub returns paginated commits, this is lightweight count
     """
     url = f"{GITHUB_API}/repos/{username}/{repo_name}/commits"
-    response = requests.get(url)
 
-    if response.status_code != 200:
+    try:
+        response = requests.get(url, headers=HEADERS, timeout=10)
+        response.raise_for_status()
+
+        data = response.json()
+
+        if isinstance(data, list):
+            return len(data)
+
         return 0
 
-    data = response.json()
-    if isinstance(data, list):
-        return len(data)
-
-    return 0
+    except requests.exceptions.RequestException as e:
+        print(f"Commit fetch failed for {repo_name}: {e}")
+        return 0
 
 
 def analyze_github_profile(username: str):
@@ -46,7 +59,7 @@ def analyze_github_profile(username: str):
     if not repos:
         return 0.0
 
-    # rate limit safe -> analyze only top 5 repos
+    # analyze only top 5 repos (rate limit safety)
     repos = repos[:5]
 
     total_stars = 0
@@ -63,6 +76,7 @@ def analyze_github_profile(username: str):
     # analyze each repo
     # -------------------------------
     for repo in repos:
+
         repo_name = repo.get("name")
 
         total_stars += repo.get("stargazers_count", 0)
@@ -75,20 +89,27 @@ def analyze_github_profile(username: str):
         # recent activity check
         # -------------------------------
         pushed_at = repo.get("pushed_at")
-        if pushed_at:
-            last_push = datetime.fromisoformat(
-                pushed_at.replace("Z", "+00:00")
-            )
-            days_diff = (now - last_push).days
 
-            if days_diff <= 90:
-                recent_active_repos += 1
+        if pushed_at:
+            try:
+                last_push = datetime.fromisoformat(
+                    pushed_at.replace("Z", "+00:00")
+                )
+
+                days_diff = (now - last_push).days
+
+                if days_diff <= 90:
+                    recent_active_repos += 1
+
+            except Exception:
+                pass
 
         # -------------------------------
         # commit analysis
         # -------------------------------
         if repo_name:
             commits = get_commit_count(username, repo_name)
+
             total_commits += commits
 
             if commits > 0:
@@ -103,8 +124,8 @@ def analyze_github_profile(username: str):
     size_factor = min(total_size / 5000, 1)
     diversity_factor = min(len(languages) / 5, 1)
 
-    # NEW signals
     freshness_factor = min(recent_active_repos / 5, 1)
+
     consistency_factor = (
         repos_with_commits / len(repos) if repos else 0
     )
@@ -112,6 +133,7 @@ def analyze_github_profile(username: str):
     # -------------------------------
     # Final GitHub Strength Score
     # -------------------------------
+
     github_strength = (
         0.30 * commits_factor +
         0.20 * stars_factor +
@@ -121,4 +143,4 @@ def analyze_github_profile(username: str):
         0.10 * consistency_factor
     )
 
-    return round(github_strength, 2) 
+    return round(github_strength, 2)

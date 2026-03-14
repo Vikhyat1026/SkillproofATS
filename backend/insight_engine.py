@@ -1,26 +1,30 @@
-def generate_ai_insights(semantic_score, achievement_score, github_score, background_type):
-    
+from role_engine import detect_best_role
+def generate_ai_insights(semantic_score, achievement_score, github_score, profile_type, resume_text):
+
     insights = []
 
-    # Semantic analysis
+    # Strong match
     if semantic_score >= 0.7:
-        insights.append("Resume strongly aligns with job description")
-    elif semantic_score >= 0.4:
-        insights.append("Partial skill alignment detected")
+        insights.append("Match: Strong - Candidate aligns well with this role.")
+
+    # Moderate match
+    elif semantic_score >= 0.45:
+        insights.append("Match: Moderate - Candidate partially fits this role.")
+
+    # Low match → suggest better role
     else:
-        insights.append("Low keyword or semantic match with role")
 
-    # Achievement analysis
-    if background_type == "non-tech" and achievement_score >= 0.5:
-        insights.append("Strong measurable achievements found")
+        suggested_role = detect_best_role(resume_text)
 
-    # GitHub analysis
-    if background_type == "tech":
-        if github_score >= 0.7:
-            insights.append("Strong GitHub activity and technical presence")
-        elif github_score > 0:
-            insights.append("Basic GitHub presence detected")
-        else:
-            insights.append("No GitHub activity found")
+        insights.append("Match: Low")
+        insights.append(f"Candidate is better suitable for: {suggested_role}")
+
+    # Achievement insight
+    if achievement_score > 0.7:
+        insights.append("Resume shows strong measurable achievements.")
+
+    # GitHub insight
+    if github_score > 0.6:
+        insights.append("GitHub profile indicates strong technical implementation skills.")
 
     return insights

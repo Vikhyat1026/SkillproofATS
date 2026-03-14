@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from ai_engine import calculate_match
@@ -7,7 +8,19 @@ from github_service import analyze_github_profile
 from resume_parser import extract_text_from_pdf
 from insight_engine import generate_ai_insights
 
+
 app = FastAPI(title="SkillProof ATS")
+
+
+# ---------- Enable CORS for Frontend ----------
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # ---------- Request Models ----------
@@ -20,7 +33,7 @@ class MatchRequest(BaseModel):
 class AnalyzeRequest(BaseModel):
     resume_text: str
     job_description: str
-    background_type: str   # tech / non-tech / technical / etc
+    background_type: str
     github_username: str | None = None
 
 
@@ -33,7 +46,12 @@ def home():
 
 @app.post("/match-score")
 def match_score(data: MatchRequest):
-    score = calculate_match(data.resume_text, data.job_description)
+
+    score = calculate_match(
+        data.resume_text,
+        data.job_description
+    )
+
     return {"similarity_score": score}
 
 
@@ -47,6 +65,7 @@ async def analyze_pdf(
     github_username: str | None = Form(None)
 ):
 
+    # Extract text from uploaded resume
     resume_text = extract_text_from_pdf(file.file)
 
     data = AnalyzeRequest(
@@ -63,7 +82,7 @@ async def analyze_pdf(
 
 def analyze_candidate(data: AnalyzeRequest):
 
-    # Normalize profile type (FRONTEND SAFE)
+    # Normalize profile type
     profile_type = data.background_type.lower()
 
     if profile_type in ["technical", "tech"]:
@@ -71,64 +90,90 @@ def analyze_candidate(data: AnalyzeRequest):
     else:
         profile_type = "non-tech"
 
-    # Semantic Score
+
+    # ---------- Semantic Score ----------
     semantic_score = calculate_match(
         data.resume_text,
         data.job_description
     )
 
-    # Achievement Score
+
+    # ---------- Achievement Score ----------
     achievement_score = calculate_achievement_score(
         data.resume_text
     )
 
-    # GitHub Score
+
+    # ---------- GitHub Score ----------
     github_score = 0.0
+
     if profile_type == "tech" and data.github_username:
         github_score = analyze_github_profile(data.github_username)
 
-    # Adaptive Weight Logic
+
+    # ---------- Adaptive Weight Logic ----------
+
     if profile_type == "tech":
+
         final_score = (
             0.6 * semantic_score +
             0.25 * github_score +
             0.15 * achievement_score
         )
+
     else:
+
         final_score = (
             0.6 * semantic_score +
             0.4 * achievement_score
         )
 
-    # AI Insight Engine
+
+    # ---------- AI Insight Engine ----------
+
     ai_insights = generate_ai_insights(
         semantic_score,
         achievement_score,
         github_score,
-        profile_type
+        profile_type,
+        data.resume_text
     )
 
-    # Convert Scores to Percentage
+
+    # ---------- Convert Scores to Percentage ----------
+
     semantic_pct = int(semantic_score * 100)
     achievement_pct = int(achievement_score * 100)
     github_pct = int(github_score * 100)
     final_pct = int(final_score * 100)
 
-    # Match Level Logic
+
+    # ---------- Match Level ----------
+
     if final_pct >= 70:
         match_level = "Strong Match"
+
     elif final_pct >= 40:
         match_level = "Moderate Match"
+
     else:
         match_level = "Low Match"
 
+
+    # ---------- Response ----------
+
     return {
+
         "overall_match": f"{final_pct}%",
+
         "match_level": match_level,
+
         "breakdown": {
             "semantic_fit": f"{semantic_pct}%",
             "achievement_strength": f"{achievement_pct}%",
             "github_strength": f"{github_pct}%"
         },
+
         "insights": ai_insights
+
     }
