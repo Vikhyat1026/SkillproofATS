@@ -9,6 +9,7 @@ from resume_parser import extract_text_from_pdf
 from insight_engine import generate_ai_insights
 
 
+
 app = FastAPI(title="SkillProof ATS")
 
 
@@ -127,9 +128,7 @@ def analyze_candidate(data: AnalyzeRequest):
             0.6 * semantic_score +
             0.4 * achievement_score
         )
-
-
-    # ---------- AI Insight Engine ----------
+# ---------- AI Insight Engine ----------
 
     ai_insights = generate_ai_insights(
         semantic_score,
@@ -138,8 +137,6 @@ def analyze_candidate(data: AnalyzeRequest):
         profile_type,
         data.resume_text
     )
-
-
     # ---------- Convert Scores to Percentage ----------
 
     semantic_pct = int(semantic_score * 100)
