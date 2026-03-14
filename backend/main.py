@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 from pydantic import BaseModel
 
 from ai_engine import calculate_match
@@ -20,7 +20,7 @@ class MatchRequest(BaseModel):
 class AnalyzeRequest(BaseModel):
     resume_text: str
     job_description: str
-    background_type: str   # "tech" or "non-tech"
+    background_type: str   # tech / non-tech / technical / etc
     github_username: str | None = None
 
 
@@ -37,19 +37,18 @@ def match_score(data: MatchRequest):
     return {"similarity_score": score}
 
 
-# PDF Upload Endpoint
+# ---------- PDF Upload Endpoint ----------
+
 @app.post("/analyze")
 async def analyze_pdf(
     file: UploadFile = File(...),
-    job_description: str = "",
-    background_type: str = "non-tech",
-    github_username: str | None = None
+    job_description: str = Form(""),
+    background_type: str = Form(""),
+    github_username: str | None = Form(None)
 ):
 
-    # Extract resume text from PDF
     resume_text = extract_text_from_pdf(file.file)
 
-    # Create AnalyzeRequest object
     data = AnalyzeRequest(
         resume_text=resume_text,
         job_description=job_description,
@@ -64,6 +63,14 @@ async def analyze_pdf(
 
 def analyze_candidate(data: AnalyzeRequest):
 
+    # Normalize profile type (FRONTEND SAFE)
+    profile_type = data.background_type.lower()
+
+    if profile_type in ["technical", "tech"]:
+        profile_type = "tech"
+    else:
+        profile_type = "non-tech"
+
     # Semantic Score
     semantic_score = calculate_match(
         data.resume_text,
@@ -77,11 +84,11 @@ def analyze_candidate(data: AnalyzeRequest):
 
     # GitHub Score
     github_score = 0.0
-    if data.background_type.lower() == "tech" and data.github_username:
+    if profile_type == "tech" and data.github_username:
         github_score = analyze_github_profile(data.github_username)
 
     # Adaptive Weight Logic
-    if data.background_type.lower() == "tech":
+    if profile_type == "tech":
         final_score = (
             0.6 * semantic_score +
             0.25 * github_score +
@@ -93,12 +100,12 @@ def analyze_candidate(data: AnalyzeRequest):
             0.4 * achievement_score
         )
 
-    # AI Insight Engine (NEW)
+    # AI Insight Engine
     ai_insights = generate_ai_insights(
         semantic_score,
         achievement_score,
         github_score,
-        data.background_type.lower()
+        profile_type
     )
 
     # Convert Scores to Percentage
