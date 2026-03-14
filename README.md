@@ -6,7 +6,8 @@ instead of keyword-based resume filtering.
 
 ## Problem
 Traditional ATS systems rely heavily on keyword matching and resume formatting,
-often rejecting skilled candidates without understanding real capability.
+often rejecting skilled candidates without understanding real capability. This results in various types
+of problem for both recruiter and those candidate who has proven their work.
 
 ## Solution
 SkillProof ATS combines semantic AI matching, portfolio proof analysis, and
@@ -15,9 +16,8 @@ micro-skill evaluation to rank candidates more fairly and accurately.
 ## Tech Stack
 - Backend: FastAPI (Python)
 - ML/NLP: Sentence Transformers, scikit-learn
-- Frontend: React
-- Database: PostgreSQL
+- Frontend: JavaScript + Tailwind CSS
 - Vector Search: FAISS
 
-## Status
-🚧 MVP under active development
+## STATUS
+THIS IS NOT THE FINAL WEBSITE, WE ARE CONSTANTLY IMPROVING AND ENHANCING MORE AND MORE FEATURES
