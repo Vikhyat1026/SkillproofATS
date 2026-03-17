@@ -1,476 +1,435 @@
 <!doctype html>
 <html lang="en" class="scroll-smooth">
-<head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>SkillProof ATS</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+
+      .hero-gradient {
+        background: radial-gradient(
+          ellipse 80% 80% at 50% -20%,
+          rgba(245, 158, 11, 0.2),
+          rgba(255, 255, 255, 0)
+        );
+      }
+    </style>
+  </head>
+
+  <body class="bg-gray-900 text-white overflow-x-hidden">
+    <header
+      class="fixed top-0 left-0 right-0 z-50 bg-gray-900/50 backdrop-blur-sm"
+    >
+      <div
+        class="container mx-auto px-6 py-4 flex justify-between items-center"
+      >
+        <div class="flex items-center gap-3">
+          <img
+            src="logo.png"
+            alt="SkillProof ATS Logo"
+            class="h-10 w-auto object-contain"
+          />
+
+          <h1 class="text-2xl font-bold tracking-tight">
+            SkillProofATS<span class="text-amber-400"></span>
+          </h1>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section
+        class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20"
+      >
+        <div class="hero-gradient absolute inset-0"></div>
+
+        <div class="relative z-10 container mx-auto px-6">
+          <div class="text-center mb-10">
+            <h1 class="text-5xl md:text-7xl font-black tracking-tighter mb-4">
+              SkillProof ATS
+            </h1>
+
+            <p class="text-lg text-gray-300">
+              A Resume intelligence Platform designed to optimize your resume
+              for applicant tracking systems instantly. Upload your resume,
+              paste the job description, and get actionable insights.
+            </p>
+          </div>
+
+          <div
+            class="max-w-2xl mx-auto bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-6 space-y-5"
+          >
+            <div
+              id="drop-zone"
+              class="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-white/20 rounded-xl bg-white/5 cursor-pointer"
+              onclick="document.getElementById('file-input').click()"
+            >
+              <input
+                id="file-input"
+                type="file"
+                accept=".pdf"
+                class="hidden"
+                onchange="handleFileSelect(event)"
+              />
+
+              <div id="idle-state">
+                <p class="text-gray-400">Click to upload Resume (PDF)</p>
+              </div>
+
+              <div id="success-state" class="hidden">
+                <p id="file-name" class="text-green-400"></p>
+              </div>
+            </div>
+
+            <div>
+              <label class="text-xs font-semibold text-gray-400 uppercase">
+                Sample Job Description
+              </label>
+
+              <select
+                id="jd-sample"
+                onchange="fillSampleJD()"
+                class="w-full px-3 py-2.5 mt-1 text-sm bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+              >
+                <option value="">Select Sample JD</option>
+                <option value="software">Software Developer</option>
+                <option value="fullstack">Full Stack Developer</option>
+                <option value="analyst">Senior Data Analyst</option>
+                <option value="hr">HR Manager</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="text-xs font-semibold text-gray-400 uppercase">
+                Job Description
+              </label>
+
+              <textarea
+                id="job_description"
+                rows="4"
+                placeholder="Paste job description..."
+                class="w-full px-3 py-2.5 text-sm bg-black/5 border border-white/10 rounded-lg text-white"
+              ></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs font-semibold text-gray-400 uppercase">
+                  Background Type
+                </label>
+
+                <select
+                  id="background_type"
+                  class="w-full px-3 py-2.5 mt-1 text-sm bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                >
+                  <option value="">Select</option>
+                  <option value="tech">Tech</option>
+                  <option value="non-tech">Non Tech</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="text-xs font-semibold text-gray-400 uppercase">
+                  GitHub Username
+                </label>
+
+                <input
+                  id="github_username"
+                  type="text"
+                  placeholder="username"
+                  class="w-full px-3 py-2.5 text-sm bg-white/5 border border-white/10 rounded-lg text-white"
+                />
+              </div>
+            </div>
+
+            <div id="error-msg" class="hidden text-red-400 text-sm"></div>
+
+            <button
+              id="analyze-btn"
+              onclick="handleSubmit()"
+              class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3.5 rounded-lg shadow-2xl transition"
+            >
+              Analyze Resume
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="results-section" class="hidden py-16">
+        <div class="container mx-auto px-6">
+          <div class="max-w-2xl mx-auto">
+            <h2 class="text-3xl font-black text-center mb-8">
+              Your Resume Score
+            </h2>
+
+            <div
+              class="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-6"
+            >
+              <div class="flex flex-col items-center gap-3 py-4">
+                <div class="relative w-36 h-36">
+                  <svg class="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      fill="none"
+                      stroke="rgba(255,255,255,0.07)"
+                      stroke-width="10"
+                    />
+
+                    <circle
+                      id="ring-fill"
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      fill="none"
+                      stroke="#d97706"
+                      stroke-width="10"
+                      stroke-linecap="round"
+                      stroke-dasharray="314.16"
+                      stroke-dashoffset="314.16"
+                    />
+                  </svg>
+
+                  <div
+                    class="absolute inset-0 flex flex-col items-center justify-center"
+                  >
+                    <span id="overall-pct" class="text-3xl font-black">0%</span>
+
+                    <span class="text-xs text-gray-400 uppercase">Match</span>
+                  </div>
+                </div>
+
+                <span
+                  id="level-badge"
+                  class="px-4 py-1 rounded-full text-sm font-bold"
+                ></span>
+              </div>
+
+              <div id="breakdown-bars" class="space-y-4"></div>
+
+              <div>
+                <h3 class="font-bold text-lg mt-6">Better Suited Roles</h3>
+
+                <div id="alt-roles" class="text-sm text-gray-300"></div>
+              </div>
+
+              <div>
+                <h3 class="font-bold text-lg mt-6">Candidate Summary</h3>
+
+                <p id="candidate-summary" class="text-sm text-gray-300"></p>
+              </div>
+
+              <div
+                id="insights-list"
+                class="space-y-2 text-sm text-gray-300"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      let selectedFile = null;
+
+      function handleFileSelect(e) {
+        selectedFile = e.target.files[0];
+
+        document.getElementById("file-name").textContent = selectedFile.name;
+
+        document.getElementById("idle-state").classList.add("hidden");
+
+        document.getElementById("success-state").classList.remove("hidden");
+      }
+
+      function showError(msg) {
+        const el = document.getElementById("error-msg");
+
+        el.textContent = msg;
+
+        el.classList.remove("hidden");
+      }
+
+      function hideError() {
+        document.getElementById("error-msg").classList.add("hidden");
+      }
+
+      const sampleJDs = {
+        software: `We are looking for a Software Developer who will be responsible for designing, developing, and maintaining scalable software applications. The ideal candidate should be passionate about writing clean code, solving complex problems, and collaborating with cross-functional teams to deliver high-quality products.
+
+                    Key Responsibilities:
+                      • Design, develop and maintain scalable software applications.
+                      • Write clean, efficient, and maintainable code.
+                      • Develop backend services and APIs using modern frameworks.
+                      • Collaborate with product managers and designers to build new features.
+                      • Debug and troubleshoot software issues to ensure system reliability.
+
+                    Required Skills:
+                      Python, REST APIs, Database Management, Git, Software Development Principles.
+
+                    Preferred Skills:
+                      Experience with cloud platforms such as AWS or Azure, containerization tools like Docker, and microservices architecture.`,
+
+        fullstack: `We are looking for a talented Full Stack Developer who is comfortable working on both frontend and backend technologies. The candidate should have experience building modern web applications and working with databases and APIs.
+
+                    Key Responsibilities:
+                    • Develop responsive user interfaces using modern JavaScript frameworks.
+                    • Design and implement backend services and APIs.
+                    • Integrate frontend components with backend systems.
+                    • Optimize application performance and ensure scalability.
+                    • Participate in code reviews and maintain high coding standards.
+
+                    Required Skills:
+                    JavaScript, React, Node.js, SQL, REST APIs, Git.
+
+                    Preferred Skills:
+                    Experience with cloud services, Docker, CI/CD pipelines, and modern UI frameworks.`,
+
+        analyst: `We are looking for a Senior Data Analyst who will be responsible for analyzing large datasets and providing actionable insights to support business decisions. The candidate should have strong analytical thinking and the ability to communicate insights effectively.
+
+                    Key Responsibilities:
+                    • Analyze complex datasets to identify trends and patterns.
+                    • Build dashboards and reports to support business decision-making.
+                    • Work with stakeholders to understand analytical requirements.
+                    • Develop data models and ensure data accuracy.
+                    • Present insights and recommendations to business teams.
+
+                    Required Skills:
+                    Python, SQL, Data Analysis, Excel, Statistical Analysis.
+
+                    Preferred Skills:
+                    Experience with visualization tools such as Tableau or Power BI and familiarity with machine learning concepts.`,
+
+            hr: `We are looking for an experienced HR Manager responsible for managing recruitment, employee engagement, and HR operations. The candidate will play a key role in developing HR strategies and supporting organizational growth.
+
+                  Key Responsibilities:
+                  • Manage end-to-end recruitment and hiring processes.
+                  • Develop and implement employee engagement initiatives.
+                  • Oversee HR operations including policies, onboarding, and training.
+                  • Support leadership in workforce planning and performance management.
+                  • Ensure compliance with HR regulations and company policies.
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  Required Skills:
+                  Recruitment, HR Operations, Employee Engagement, Communication, Organizational Management.
 
-<title>SkillProof ATS</title>
+                  Preferred Skills:
+                  Experience with HR analytics, talent management strategies, and HR software systems.`,
+      };
 
-<script src="https://cdn.tailwindcss.com"></script>
+      function fillSampleJD() {
+        const selected = document.getElementById("jd-sample").value;
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        if (sampleJDs[selected]) {
+          document.getElementById("job_description").value =
+            sampleJDs[selected];
+        }
+      }
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+      function parsePct(val) {
+        return parseInt(String(val || "0").replace("%", ""));
+      }
 
-<style>
+      async function handleSubmit() {
+        hideError();
 
-body{
-font-family:"Inter",sans-serif;
-}
+        const job = document.getElementById("job_description").value.trim();
 
-.hero-gradient{
-background:radial-gradient(
-ellipse 80% 80% at 50% -20%,
-rgba(245,158,11,0.2),
-rgba(255,255,255,0)
-);
-}
+        const type = document.getElementById("background_type").value;
 
-</style>
+        const github = document.getElementById("github_username").value.trim();
 
-</head>
+        if (!selectedFile) return showError("Upload resume");
 
-<body class="bg-gray-900 text-white overflow-x-hidden">
+        if (!job) return showError("Enter job description");
 
-<header class="fixed top-0 left-0 right-0 z-50 bg-gray-900/50 backdrop-blur-sm">
+        if (!type) return showError("Select background type");
 
-<div class="container mx-auto px-6 py-4 flex justify-between items-center">
+        const formData = new FormData();
 
-<div class="flex items-center gap-3">
+        formData.append("file", selectedFile);
 
-<img src="logo.png" alt="SkillProof ATS Logo" class="h-10 w-auto object-contain">
+        formData.append("job_description", job);
 
-<h1 class="text-2xl font-bold tracking-tight">
-SkillProof ATS<span class="text-amber-400">.</span>
-</h1>
+        formData.append("background_type", type);
 
-</div>
+        if (github) {
+          formData.append("github_username", github);
+        }
 
-</div>
+        const btn = document.getElementById("analyze-btn");
 
-</header>
+        btn.disabled = true;
 
+        btn.textContent = "Analyzing...";
 
-<main>
+        try {
+          const res = await fetch("http://127.0.0.1:8000/analyze", {
+            method: "POST",
 
-<section class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+            body: formData,
+          });
 
-<div class="hero-gradient absolute inset-0"></div>
+          const data = await res.json();
 
-<div class="relative z-10 container mx-auto px-6">
+          showResults(data);
+        } catch (err) {
+          showError("Backend not reachable");
+        }
 
-<div class="text-center mb-10">
+        btn.disabled = false;
 
-<h1 class="text-5xl md:text-7xl font-black tracking-tighter mb-4">
-SkillProof ATS
-</h1>
+        btn.textContent = "Analyze Resume";
+      }
 
-<p class="text-lg text-gray-300">
-A Resume intelligence Platform designed to optimize your resume for applicant tracking systems instantly.
-Upload your resume, paste the job description, and get actionable insights.
-</p>
+      function showResults(data) {
+        document.getElementById("results-section").classList.remove("hidden");
 
-</div>
+        document.getElementById("overall-pct").textContent = data.overall_match;
 
+        document.getElementById("level-badge").textContent = data.match_level;
 
-<div class="max-w-2xl mx-auto bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-6 space-y-5">
+        const pct = parsePct(data.overall_match);
 
+        const circumference = 314.16;
 
-<div id="drop-zone"
-class="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-white/20 rounded-xl bg-white/5 cursor-pointer"
-onclick="document.getElementById('file-input').click()">
+        const offset = circumference - (pct / 100) * circumference;
 
-<input id="file-input" type="file" accept=".pdf" class="hidden" onchange="handleFileSelect(event)">
+        setTimeout(() => {
+          document.getElementById("ring-fill").style.strokeDashoffset = offset;
+        }, 200);
 
-<div id="idle-state">
-<p class="text-gray-400">Click to upload Resume (PDF)</p>
-</div>
+        const bars = document.getElementById("breakdown-bars");
 
-<div id="success-state" class="hidden">
-<p id="file-name" class="text-green-400"></p>
-</div>
+        bars.innerHTML = "";
 
-</div>
+        const items = [
+          ["Semantic Fit", data.breakdown.semantic_fit],
 
+          ["Achievement", data.breakdown.achievement_strength],
 
-<div>
+          ["GitHub", data.breakdown.github_strength],
+        ];
 
-<label class="text-xs font-semibold text-gray-400 uppercase">
-Sample Job Description
-</label>
+        items.forEach(([label, val]) => {
+          const p = parsePct(val);
 
-<select id="jd-sample"
-onchange="fillSampleJD()"
-class="w-full px-3 py-2.5 mt-1 text-sm bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
-
-<option value="">Select Sample JD</option>
-<option value="software">Software Developer</option>
-<option value="fullstack">Full Stack Developer</option>
-<option value="analyst">Senior Data Analyst</option>
-<option value="hr">HR Manager</option>
-
-</select>
-
-</div>
-
-
-<div>
-
-<label class="text-xs font-semibold text-gray-400 uppercase">
-Job Description
-</label>
-
-<textarea
-id="job_description"
-rows="4"
-placeholder="Paste job description..."
-class="w-full px-3 py-2.5 text-sm bg-black/5 border border-white/10 rounded-lg text-white">
-</textarea>
-
-</div>
-
-
-<div class="grid grid-cols-2 gap-4">
-
-<div>
-
-<label class="text-xs font-semibold text-gray-400 uppercase">
-Background Type
-</label>
-
-<select
-id="background_type"
-class="w-full px-3 py-2.5 mt-1 text-sm bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
-
-<option value="">Select</option>
-<option value="tech">Tech</option>
-<option value="non-tech">Non Tech</option>
-
-</select>
-
-</div>
-
-
-<div>
-
-<label class="text-xs font-semibold text-gray-400 uppercase">
-GitHub Username
-</label>
-
-<input
-id="github_username"
-type="text"
-placeholder="username"
-class="w-full px-3 py-2.5 text-sm bg-white/5 border border-white/10 rounded-lg text-white">
-
-</div>
-
-</div>
-
-
-<div id="error-msg" class="hidden text-red-400 text-sm"></div>
-
-
-<button
-id="analyze-btn"
-onclick="handleSubmit()"
-class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3.5 rounded-lg shadow-2xl transition">
-
-Analyze Resume
-
-</button>
-
-</div>
-
-</div>
-
-</section>
-
-
-
-<section id="results-section" class="hidden py-16">
-
-<div class="container mx-auto px-6">
-
-<div class="max-w-2xl mx-auto">
-
-<h2 class="text-3xl font-black text-center mb-8">
-Your Resume Score
-</h2>
-
-
-<div class="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-6">
-
-
-<div class="flex flex-col items-center gap-3 py-4">
-
-<div class="relative w-36 h-36">
-
-<svg class="w-full h-full -rotate-90" viewBox="0 0 120 120">
-
-<circle
-cx="60"
-cy="60"
-r="50"
-fill="none"
-stroke="rgba(255,255,255,0.07)"
-stroke-width="10"
-/>
-
-<circle
-id="ring-fill"
-cx="60"
-cy="60"
-r="50"
-fill="none"
-stroke="#d97706"
-stroke-width="10"
-stroke-linecap="round"
-stroke-dasharray="314.16"
-stroke-dashoffset="314.16"
-/>
-
-</svg>
-
-<div class="absolute inset-0 flex flex-col items-center justify-center">
-
-<span id="overall-pct" class="text-3xl font-black">0%</span>
-
-<span class="text-xs text-gray-400 uppercase">Match</span>
-
-</div>
-
-</div>
-
-<span id="level-badge" class="px-4 py-1 rounded-full text-sm font-bold"></span>
-
-</div>
-
-
-<div id="breakdown-bars" class="space-y-4"></div>
-
-
-<div>
-
-<h3 class="font-bold text-lg mt-6">Better Suited Roles</h3>
-
-<div id="alt-roles" class="text-sm text-gray-300"></div>
-
-</div>
-
-
-<div>
-
-<h3 class="font-bold text-lg mt-6">Candidate Summary</h3>
-
-<p id="candidate-summary" class="text-sm text-gray-300"></p>
-
-</div>
-
-
-<div id="insights-list" class="space-y-2 text-sm text-gray-300"></div>
-
-</div>
-
-</div>
-
-</div>
-
-</section>
-
-</main>
-
-
-
-<script>
-
-let selectedFile=null;
-
-
-function handleFileSelect(e){
-
-selectedFile=e.target.files[0];
-
-document.getElementById("file-name").textContent=selectedFile.name;
-
-document.getElementById("idle-state").classList.add("hidden");
-
-document.getElementById("success-state").classList.remove("hidden");
-
-}
-
-
-function showError(msg){
-
-const el=document.getElementById("error-msg");
-
-el.textContent=msg;
-
-el.classList.remove("hidden");
-
-}
-
-
-function hideError(){
-
-document.getElementById("error-msg").classList.add("hidden");
-
-}
-
-
-
-const sampleJDs={
-
-software:`We are looking for a Software Developer responsible for designing scalable applications using Python and APIs.`,
-
-fullstack:`Full Stack Developer comfortable with React, Node.js and SQL databases.`,
-
-analyst:`Senior Data Analyst responsible for analyzing large datasets and generating insights using Python and SQL.`,
-
-hr:`HR Manager responsible for recruitment, employee engagement and HR operations.`
-
-};
-
-
-
-function fillSampleJD(){
-
-const selected=document.getElementById("jd-sample").value;
-
-if(sampleJDs[selected]){
-
-document.getElementById("job_description").value=sampleJDs[selected];
-
-}
-
-}
-
-
-function parsePct(val){
-
-return parseInt(String(val||"0").replace("%",""));
-
-}
-
-
-
-async function handleSubmit(){
-
-hideError();
-
-const job=document.getElementById("job_description").value.trim();
-
-const type=document.getElementById("background_type").value;
-
-const github=document.getElementById("github_username").value.trim();
-
-
-if(!selectedFile)return showError("Upload resume");
-
-if(!job)return showError("Enter job description");
-
-if(!type)return showError("Select background type");
-
-
-const formData=new FormData();
-
-formData.append("file",selectedFile);
-
-formData.append("job_description",job);
-
-formData.append("background_type",type);
-
-if(github){
-
-formData.append("github_username",github);
-
-}
-
-
-const btn=document.getElementById("analyze-btn");
-
-btn.disabled=true;
-
-btn.textContent="Analyzing...";
-
-
-try{
-
-const res=await fetch("http://127.0.0.1:8000/analyze",{
-
-method:"POST",
-
-body:formData
-
-});
-
-const data=await res.json();
-
-showResults(data);
-
-}
-
-catch(err){
-
-showError("Backend not reachable");
-
-}
-
-
-btn.disabled=false;
-
-btn.textContent="Analyze Resume";
-
-}
-
-
-
-function showResults(data){
-
-document.getElementById("results-section").classList.remove("hidden");
-
-document.getElementById("overall-pct").textContent=data.overall_match;
-
-document.getElementById("level-badge").textContent=data.match_level;
-
-
-const pct=parsePct(data.overall_match);
-
-const circumference=314.16;
-
-const offset=circumference-(pct/100)*circumference;
-
-
-setTimeout(()=>{
-
-document.getElementById("ring-fill").style.strokeDashoffset=offset;
-
-},200);
-
-
-const bars=document.getElementById("breakdown-bars");
-
-bars.innerHTML="";
-
-
-const items=[
-
-["Semantic Fit",data.breakdown.semantic_fit],
-
-["Achievement",data.breakdown.achievement_strength],
-
-["GitHub",data.breakdown.github_strength]
-
-];
-
-
-items.forEach(([label,val])=>{
-
-const p=parsePct(val);
-
-bars.innerHTML+=`
+          bars.innerHTML += `
 
 <div>
 
@@ -491,37 +450,27 @@ bars.innerHTML+=`
 </div>
 
 `;
+        });
 
-});
+        const roles = document.getElementById("alt-roles");
 
+        roles.innerHTML = "";
 
-const roles=document.getElementById("alt-roles");
+        (data.alternative_roles || []).forEach((r) => {
+          roles.innerHTML += `<div>• ${r}</div>`;
+        });
 
-roles.innerHTML="";
+        document.getElementById("candidate-summary").textContent =
+          data.candidate_summary || "";
 
-(data.alternative_roles||[]).forEach((r)=>{
+        const insights = document.getElementById("insights-list");
 
-roles.innerHTML+=`<div>• ${r}</div>`;
+        insights.innerHTML = "";
 
-});
-
-
-document.getElementById("candidate-summary").textContent=data.candidate_summary||"";
-
-
-const insights=document.getElementById("insights-list");
-
-insights.innerHTML="";
-
-(data.insights||[]).forEach((i)=>{
-
-insights.innerHTML+=`<div>• ${i}</div>`;
-
-});
-
-}
-
-</script>
-
-</body>
+        (data.insights || []).forEach((i) => {
+          insights.innerHTML += `<div>• ${i}</div>`;
+        });
+      }
+    </script>
+  </body>
 </html>

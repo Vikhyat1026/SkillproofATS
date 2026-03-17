@@ -3,7 +3,7 @@ from sentence_transformers import SentenceTransformer, util
 # Load model once
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# Broad job domains (covers tech + non-tech)
+# Broad job domains
 ROLE_DOMAINS = {
     "Software Engineering": "software development programming backend frontend api system design coding python java react",
     
