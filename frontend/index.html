@@ -302,38 +302,37 @@ Experience with HR analytics, talent management strategies, and HR software syst
         ["GitHub Impact", data.breakdown.github_strength],
       ];
 
+      let htmlContent = "";
       items.forEach(([label, val]) => {
         const p = parsePct(val);
-        // Randomly offset slightly for animation effect
-        setTimeout(() => {
-          bars.innerHTML += \`
+        htmlContent += `
             <div class="breakdown-item">
               <div class="breakdown-header">
-                <span>\${label}</span>
-                <span class="breakdown-value">\${val}</span>
+                <span>${label}</span>
+                <span class="breakdown-value">${val}</span>
               </div>
               <div class="progress-bar-bg">
-                <div style="width: \${p}%" class="progress-bar-fill"></div>
+                <div style="width: ${p}%" class="progress-bar-fill"></div>
               </div>
             </div>
-          \`;
-        }, 50);
+        `;
       });
+      bars.innerHTML = htmlContent;
 
       const roles = document.getElementById("alt-roles");
       roles.innerHTML = "";
       if (data.alternative_roles && data.alternative_roles.length > 0) {
          data.alternative_roles.forEach((r) => {
-           roles.innerHTML += \`<div>• \${r}</div>\`;
+           roles.innerHTML += `<div>• ${r}</div>`;
          });
       } else {
-         roles.innerHTML = \`<div style="font-style: italic; opacity: 0.6;">Current role seems to be the best fit.</div>\`;
+         roles.innerHTML = `<div style="font-style: italic; opacity: 0.6;">Current role seems to be the best fit.</div>`;
       }
 
       const insights = document.getElementById("insights-list");
       insights.innerHTML = "";
       (data.insights || []).forEach((i) => {
-        insights.innerHTML += \`<li>\${i}</li>\`;
+        insights.innerHTML += `<li>${i}</li>`;
       });
       
       // Handle Missing Skills specific visual formatting
@@ -344,7 +343,7 @@ Experience with HR analytics, talent management strategies, and HR software syst
       if (data.missing_skills && data.missing_skills.length > 0) {
         missingSkillsContainer.style.display = "block";
         data.missing_skills.forEach(skill => {
-          missingSkillsList.innerHTML += \`<span class="skill-tag">\${skill}</span>\`;
+          missingSkillsList.innerHTML += `<span class="skill-tag">${skill}</span>`;
         });
       } else {
         missingSkillsContainer.style.display = "none";
