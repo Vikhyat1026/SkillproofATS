@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from ai_engine import calculate_match_and_missing_skills
+from ai_engine import calculate_match_and_missing_skills, ask_gemini_resume_question, generate_github_insights
 from achievement_engine import calculate_achievement_score
 from github_service import analyze_github_profile
 from resume_parser import extract_text_from_pdf
@@ -37,6 +37,11 @@ class AnalyzeRequest(BaseModel):
     background_type: str
     github_username: str | None = None
 
+class ChatRequest(BaseModel):
+    resume_text: str
+    job_description: str
+    question: str
+
 
 # ---------- Routes ----------
 
@@ -54,6 +59,12 @@ def match_score(data: MatchRequest):
     )
 
     return {"similarity_score": score, "missing_skills": missing_skills}
+
+
+@app.post("/chat")
+def chat(data: ChatRequest):
+    answer = ask_gemini_resume_question(data.question, data.resume_text, data.job_description)
+    return {"answer": answer}
 
 
 # ---------- PDF Upload Endpoint ----------
@@ -105,11 +116,14 @@ def analyze_candidate(data: AnalyzeRequest):
     )
 
 
-    # ---------- GitHub Score ----------
+    # ---------- GitHub Score & Deep Scan ----------
     github_score = 0.0
+    github_profile_data = {}
+    github_analysis = ""
 
     if profile_type == "tech" and data.github_username:
-        github_score = analyze_github_profile(data.github_username)
+        github_score, github_profile_data = analyze_github_profile(data.github_username)
+        github_analysis = generate_github_insights(github_profile_data, data.job_description)
 
 
     # ---------- Adaptive Weight Logic ----------
@@ -128,9 +142,9 @@ def analyze_candidate(data: AnalyzeRequest):
             0.6 * semantic_score +
             0.4 * achievement_score
         )
-# ---------- AI Insight Engine ----------
+    # ---------- AI Insight Engine ----------
 
-    ai_insights = generate_ai_insights(
+    ai_insights, alternative_roles = generate_ai_insights(
         semantic_score,
         achievement_score,
         github_score,
@@ -173,6 +187,9 @@ def analyze_candidate(data: AnalyzeRequest):
         },
 
         "insights": ai_insights,
-        "missing_skills": missing_skills
+        "missing_skills": missing_skills,
+        "alternative_roles": alternative_roles,
+        "github_analysis": github_analysis,
+        "resume_text_cached": data.resume_text
 
     }

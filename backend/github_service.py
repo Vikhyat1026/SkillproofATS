@@ -1,12 +1,19 @@
 import requests
+import os
+from dotenv import load_dotenv
 from datetime import datetime, timezone
 
+load_dotenv()
+
 GITHUB_API = "https://api.github.com"
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 HEADERS = {
     "Accept": "application/vnd.github+json",
     "User-Agent": "SkillProofATS"
 }
+if GITHUB_TOKEN:
+    HEADERS["Authorization"] = f"Bearer {GITHUB_TOKEN}"
 
 
 def get_user_repos(username: str):
@@ -57,7 +64,7 @@ def analyze_github_profile(username: str):
     repos = get_user_repos(username)
 
     if not repos:
-        return 0.0
+        return 0.0, {}
 
     # analyze only top 5 repos (rate limit safety)
     repos = repos[:5]
@@ -65,7 +72,7 @@ def analyze_github_profile(username: str):
     total_stars = 0
     total_commits = 0
     total_size = 0
-    languages = set()
+    language_counts = {}
 
     recent_active_repos = 0
     repos_with_commits = 0
@@ -82,8 +89,9 @@ def analyze_github_profile(username: str):
         total_stars += repo.get("stargazers_count", 0)
         total_size += repo.get("size", 0)
 
-        if repo.get("language"):
-            languages.add(repo.get("language"))
+        repo_lang = repo.get("language")
+        if repo_lang:
+            language_counts[repo_lang] = language_counts.get(repo_lang, 0) + 1
 
         # -------------------------------
         # recent activity check
@@ -122,7 +130,7 @@ def analyze_github_profile(username: str):
     stars_factor = min(total_stars / 50, 1)
     commits_factor = min(total_commits / 100, 1)
     size_factor = min(total_size / 5000, 1)
-    diversity_factor = min(len(languages) / 5, 1)
+    diversity_factor = min(len(language_counts) / 5, 1)
 
     freshness_factor = min(recent_active_repos / 5, 1)
 
@@ -143,4 +151,12 @@ def analyze_github_profile(username: str):
         0.10 * consistency_factor
     )
 
-    return round(github_strength, 2)
+    profile_data = {
+        "total_commits": total_commits,
+        "total_stars": total_stars,
+        "language_breakdown": language_counts,
+        "active_repos": recent_active_repos,
+        "total_repos_scanned": len(repos)
+    }
+
+    return round(github_strength, 2), profile_data

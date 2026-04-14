@@ -2,6 +2,7 @@ from role_engine import detect_best_role
 def generate_ai_insights(semantic_score, achievement_score, github_score, profile_type, resume_text, missing_skills=None):
 
     insights = []
+    alternative_roles = []
 
     # Strong match
     if semantic_score >= 0.7:
@@ -18,6 +19,7 @@ def generate_ai_insights(semantic_score, achievement_score, github_score, profil
 
         insights.append("Match: Low")
         insights.append(f"Candidate is better suitable for: {suggested_role}")
+        alternative_roles.append(suggested_role)
 
     # Achievement insight
     if achievement_score > 0.7:
@@ -31,4 +33,4 @@ def generate_ai_insights(semantic_score, achievement_score, github_score, profil
     if missing_skills and len(missing_skills) > 0:
         insights.append(f"Consider adding missing skills to improve alignment: {', '.join(missing_skills)}")
 
-    return insights
+    return insights, alternative_roles

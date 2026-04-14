@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SkillProof ATS</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
   <header class="header">
     <div class="container">
@@ -20,7 +22,8 @@
     <section class="container hero-section">
       <h1 class="title">SkillProof ATS</h1>
       <p class="subtitle">
-        A Resume Intelligence Platform designed to optimize your resume for applicant tracking systems instantly. Upload your resume, paste the job description, and get actionable insights.
+        A Resume Intelligence Platform designed to optimize your resume for applicant tracking systems instantly. Upload
+        your resume, paste the job description, and get actionable insights.
       </p>
     </section>
 
@@ -28,7 +31,8 @@
       <!-- Upload Zone -->
       <div id="drop-zone" class="file-dropzone" onclick="document.getElementById('file-input').click()">
         <input id="file-input" type="file" accept=".pdf" class="file-input" onchange="handleFileSelect(event)" />
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
           <polyline points="17 8 12 3 7 8"></polyline>
           <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -85,7 +89,7 @@
     <section id="results-section" class="results-section container">
       <div class="card" style="max-width: 900px; margin-top: 3rem;">
         <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">Analysis Results</h2>
-        
+
         <div class="results-grid">
           <!-- Left Column: Scores -->
           <div>
@@ -104,16 +108,18 @@
             </div>
 
             <div id="breakdown-bars">
-               <!-- Auto-populated by JS -->
+              <!-- Auto-populated by JS -->
             </div>
           </div>
 
           <!-- Right Column: Insights & Skills -->
           <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-            
+
             <div id="missing-skills-section" class="missing-skills-container" style="display: none;">
-              <h3 class="section-title" style="color: #FCA5A5; border-color: rgba(239, 68, 68, 0.3);">Priority Missing Skills</h3>
-              <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">These keywords were found in the JD but lack coverage in your resume:</p>
+              <h3 class="section-title" style="color: #FCA5A5; border-color: rgba(239, 68, 68, 0.3);">Priority Missing
+                Skills</h3>
+              <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">These keywords were
+                found in the JD but lack coverage in your resume:</p>
               <div id="missing-skills-list" class="skills-tags">
                 <!-- Auto-populated -->
               </div>
@@ -130,18 +136,45 @@
                 <!-- Auto-populated -->
               </ul>
             </div>
-            
+
+            <div id="github-analysis-section" style="display: none;">
+              <h3 class="section-title" style="color: #60A5FA; border-color: rgba(96, 165, 250, 0.3);">GitHub Deep Scan</h3>
+              <div id="github-analysis-text" style="padding: 1rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; color: #DBEAFE; font-size: 0.95rem; line-height: 1.5;"></div>
+            </div>
+
           </div>
         </div>
       </div>
+      
+      <!-- Interactive Chat Interface - Sage -->
+      <div class="chat-container">
+        <div class="chat-header">
+          <div class="sage-avatar">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+          </div>
+          Ask Sage
+        </div>
+        <div id="chat-messages" class="chat-messages">
+          <div class="chat-wrapper ai">
+            <div class="chat-msg msg-ai">Hi! I'm Sage, your AI recruiter. I've finished analyzing your profile. Ask me anything about your resume and how it fits this role!</div>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <input type="text" id="chat-input" placeholder="e.g., What specific bullet points should I rewrite?" onkeypress="handleChatKeyPress(event)" />
+          <button id="chat-send-btn" class="chat-btn" onclick="sendChatMessage()">Send</button>
+        </div>
+      </div>
+
     </section>
   </main>
 
   <script>
+    let globalResumeText = "";
+    let globalJobDesc = "";
     let selectedFile = null;
 
     function handleFileSelect(e) {
-      if(e.target.files && e.target.files[0]) {
+      if (e.target.files && e.target.files[0]) {
         selectedFile = e.target.files[0];
         document.getElementById("file-name").textContent = selectedFile.name;
         document.getElementById("idle-state").classList.add("hidden");
@@ -261,9 +294,12 @@ Experience with HR analytics, talent management strategies, and HR software syst
           body: formData,
         });
 
-        if(!res.ok) throw new Error("Network response was not ok");
+        if (!res.ok) throw new Error("Network response was not ok");
 
         const data = await res.json();
+        globalResumeText = data.resume_text_cached || "";
+        globalJobDesc = job;
+        
         showResults(data);
       } catch (err) {
         showError("Backend not reachable or error processing your request.");
@@ -276,7 +312,7 @@ Experience with HR analytics, talent management strategies, and HR software syst
 
     function showResults(data) {
       document.getElementById("results-section").classList.add("active");
-      
+
       // Scroll to results cleanly
       setTimeout(() => {
         document.getElementById("results-section").scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -322,11 +358,11 @@ Experience with HR analytics, talent management strategies, and HR software syst
       const roles = document.getElementById("alt-roles");
       roles.innerHTML = "";
       if (data.alternative_roles && data.alternative_roles.length > 0) {
-         data.alternative_roles.forEach((r) => {
-           roles.innerHTML += `<div>• ${r}</div>`;
-         });
+        data.alternative_roles.forEach((r) => {
+          roles.innerHTML += `<div>• ${r}</div>`;
+        });
       } else {
-         roles.innerHTML = `<div style="font-style: italic; opacity: 0.6;">Current role seems to be the best fit.</div>`;
+        roles.innerHTML = `<div style="font-style: italic; opacity: 0.6;">Current role seems to be the best fit.</div>`;
       }
 
       const insights = document.getElementById("insights-list");
@@ -334,12 +370,12 @@ Experience with HR analytics, talent management strategies, and HR software syst
       (data.insights || []).forEach((i) => {
         insights.innerHTML += `<li>${i}</li>`;
       });
-      
+
       // Handle Missing Skills specific visual formatting
       const missingSkillsContainer = document.getElementById("missing-skills-section");
       const missingSkillsList = document.getElementById("missing-skills-list");
       missingSkillsList.innerHTML = "";
-      
+
       if (data.missing_skills && data.missing_skills.length > 0) {
         missingSkillsContainer.style.display = "block";
         data.missing_skills.forEach(skill => {
@@ -348,6 +384,76 @@ Experience with HR analytics, talent management strategies, and HR software syst
       } else {
         missingSkillsContainer.style.display = "none";
       }
+
+      // Handle GitHub Deep Scan UI
+      const githubAnalysisSection = document.getElementById("github-analysis-section");
+      if (data.github_analysis) {
+        githubAnalysisSection.style.display = "block";
+        document.getElementById("github-analysis-text").innerHTML = data.github_analysis.replace(/\n/g, "<br/>").replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+      } else {
+        githubAnalysisSection.style.display = "none";
+      }
+    }
+
+    // --- Chat Logic ---
+    function handleChatKeyPress(e) {
+      if(e.key === "Enter") sendChatMessage();
+    }
+
+    async function sendChatMessage() {
+      const inputEl = document.getElementById("chat-input");
+      const text = inputEl.value.trim();
+      if(!text) return;
+
+      const msgsDiv = document.getElementById("chat-messages");
+      
+      // Add user msg
+      msgsDiv.innerHTML += `
+        <div class="chat-wrapper user">
+          <div class="chat-msg msg-user">${text}</div>
+        </div>`;
+      inputEl.value = "";
+      
+      // Temporary AI loading msg
+      const loadingId = "load-" + Date.now();
+      msgsDiv.innerHTML += `
+        <div id="${loadingId}" class="chat-wrapper ai">
+          <div class="chat-msg msg-ai typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+        </div>`;
+      msgsDiv.scrollTop = msgsDiv.scrollHeight;
+
+      // Ensure we hit the backend
+      try {
+        const res = await fetch("http://127.0.0.1:8000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            resume_text: globalResumeText,
+            job_description: globalJobDesc,
+            question: text
+          })
+        });
+
+        const data = await res.json();
+        document.getElementById(loadingId).remove();
+        
+        // Use marked.js or basic replace to nicely format Gemini output
+        let answerText = data.answer.replace(/\n/g, "<br/>").replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+        
+        msgsDiv.innerHTML += `
+          <div class="chat-wrapper ai">
+            <div class="chat-msg msg-ai">${answerText}</div>
+          </div>`;
+      } catch (e) {
+        document.getElementById(loadingId).remove();
+        msgsDiv.innerHTML += `
+          <div class="chat-wrapper ai">
+            <div class="chat-msg msg-ai" style="color:red">Oops! Backend failed to respond. Make sure uvicorn is running.</div>
+          </div>`;
+      }
+      msgsDiv.scrollTop = msgsDiv.scrollHeight;
     }
   </script>
 </body>
