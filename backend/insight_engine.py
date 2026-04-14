@@ -1,5 +1,5 @@
 from role_engine import detect_best_role
-def generate_ai_insights(semantic_score, achievement_score, github_score, profile_type, resume_text):
+def generate_ai_insights(semantic_score, achievement_score, github_score, profile_type, resume_text, missing_skills=None):
 
     insights = []
 
@@ -26,5 +26,9 @@ def generate_ai_insights(semantic_score, achievement_score, github_score, profil
     # GitHub insight
     if github_score > 0.6:
         insights.append("GitHub profile indicates strong technical implementation skills.")
+
+    # Missing Skills insight
+    if missing_skills and len(missing_skills) > 0:
+        insights.append(f"Consider adding missing skills to improve alignment: {', '.join(missing_skills)}")
 
     return insights

@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from ai_engine import calculate_match
+from ai_engine import calculate_match_and_missing_skills
 from achievement_engine import calculate_achievement_score
 from github_service import analyze_github_profile
 from resume_parser import extract_text_from_pdf
@@ -48,12 +48,12 @@ def home():
 @app.post("/match-score")
 def match_score(data: MatchRequest):
 
-    score = calculate_match(
+    score, missing_skills = calculate_match_and_missing_skills(
         data.resume_text,
         data.job_description
     )
 
-    return {"similarity_score": score}
+    return {"similarity_score": score, "missing_skills": missing_skills}
 
 
 # ---------- PDF Upload Endpoint ----------
@@ -92,8 +92,8 @@ def analyze_candidate(data: AnalyzeRequest):
         profile_type = "non-tech"
 
 
-    # ---------- Semantic Score ----------
-    semantic_score = calculate_match(
+    # ---------- Semantic Score & Missing Skills ----------
+    semantic_score, missing_skills = calculate_match_and_missing_skills(
         data.resume_text,
         data.job_description
     )
@@ -135,7 +135,8 @@ def analyze_candidate(data: AnalyzeRequest):
         achievement_score,
         github_score,
         profile_type,
-        data.resume_text
+        data.resume_text,
+        missing_skills
     )
     # ---------- Convert Scores to Percentage ----------
 
@@ -171,6 +172,7 @@ def analyze_candidate(data: AnalyzeRequest):
             "github_strength": f"{github_pct}%"
         },
 
-        "insights": ai_insights
+        "insights": ai_insights,
+        "missing_skills": missing_skills
 
     }
