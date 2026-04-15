@@ -27,43 +27,43 @@ def calculate_match_and_missing_skills(resume_text, job_description):
     {resume_text}
     """
     
-    response = model.generate_content(
-        prompt,
-        generation_config=genai.GenerationConfig(
-            response_mime_type="application/json",
-            temperature=0.2
-        )
-    )
-    
     try:
+        response = model.generate_content(
+            prompt,
+            generation_config=genai.GenerationConfig(
+                response_mime_type="application/json",
+                temperature=0.2
+            )
+        )
         data = json.loads(response.text)
         return float(data.get("semantic_score", 0.0)), data.get("missing_skills", [])
     except Exception as e:
-        print(f"Gemini API Parsing Error: {e}")
-        return 0.0, []
+        print(f"Gemini API Error (Match): {e}")
+        return 0.0, ["Rate limit exceeded. Please try again shortly."]
 
 def ask_gemini_resume_question(question, resume_text, job_description):
     """Handle interactive chat questions via Gemini."""
-    if not resume_text:
-        return "Please upload a resume first."
-        
     prompt = f"""
-    You are an expert career counselor and ATS strategist.
-    The user is asking you a question about their resume and its fit for a specific job.
+    You are 'Sage', an expert, friendly, and talkative AI career counselor and ATS strategist for 'SkillProof ATS'.
+    You love to chat, answer general questions playfully, explain what you do, and engage in friendly conversation. 
+    You DO NOT always have to do analysis. If the user asks a general question, answer it warmly and naturally.
+    If the user asks about their resume, provide actionable insights but keep the tone conversational.
     
-    Job Description:
-    {job_description}
+    Job Description context:
+    {job_description if job_description else 'None provided yet'}
     
-    Resume:
-    {resume_text}
+    Resume context:
+    {resume_text if resume_text else 'None provided yet'}
     
-    User's Question: {question}
-    
-    Provide an actionable, insightful, and concise answer directly based on their resume and the JD. Use clean formatting.
+    User's message: {question}
     """
     
-    response = model.generate_content(prompt)
-    return response.text
+    try:
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        print(f"Gemini API Error (Chat): {e}")
+        return "I'm currently receiving too many requests! Please wait a moment and try again."
 
 def generate_github_insights(github_data, job_description):
     """Generates a personalized developer assessment by cross-referencing GitHub raw data against the JD."""

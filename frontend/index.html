@@ -9,164 +9,290 @@
 </head>
 
 <body>
-  <header class="header">
-    <div class="container">
-      <a href="/" class="brand">
-        <img src="logo.png" alt="SkillProof ATS Logo" onerror="this.style.display='none'" />
-        SkillProofATS<span style="color: var(--accent-primary)">.</span>
-      </a>
-    </div>
-  </header>
+  <!-- Sidebar toggle button (always visible) -->
+  <button id="sidebar-toggle" class="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
+    <span></span><span></span><span></span>
+  </button>
+  <!-- Mobile overlay backdrop -->
+  <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-  <main class="main-content">
-    <section class="container hero-section">
-      <h1 class="title">SkillProof ATS</h1>
-      <p class="subtitle">
-        A Resume Intelligence Platform designed to optimize your resume for applicant tracking systems instantly. Upload
-        your resume, paste the job description, and get actionable insights.
-      </p>
-    </section>
-
-    <div class="container card">
-      <!-- Upload Zone -->
-      <div id="drop-zone" class="file-dropzone" onclick="document.getElementById('file-input').click()">
-        <input id="file-input" type="file" accept=".pdf" class="file-input" onchange="handleFileSelect(event)" />
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="17 8 12 3 7 8"></polyline>
-          <line x1="12" y1="3" x2="12" y2="15"></line>
-        </svg>
-        <div id="idle-state" class="file-idle">
-          <p class="file-drop-text">Click to upload Resume (PDF)</p>
-        </div>
-        <div id="success-state" class="file-success">
-          <p id="file-name"></p>
-        </div>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <img src="logo.png" alt="SkillProof ATS" onerror="this.style.display='none'" />
+        <span>SkillProof<span style="color: var(--accent-primary)">.</span></span>
       </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="switchTab('analysis', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Analysis
+        </button>
+        <button class="nav-item" onclick="switchTab('about', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          About
+        </button>
+        <button class="nav-item" onclick="switchTab('candidates', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          Candidates
+        </button>
+        <button class="nav-item" onclick="switchTab('settings', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+            </path>
+          </svg>
+          Settings
+        </button>
+      </nav>
 
-      <!-- Form Elements -->
-      <div class="form-group">
-        <label class="form-label" for="jd-sample">Sample Job Description</label>
-        <select id="jd-sample" class="form-control" onchange="fillSampleJD()">
-          <option value="">Select Sample JD</option>
-          <option value="software">Software Developer</option>
-          <option value="fullstack">Full Stack Developer</option>
-          <option value="analyst">Senior Data Analyst</option>
-          <option value="hr">HR Manager</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="job_description">Job Description</label>
-        <textarea id="job_description" class="form-control" placeholder="Paste job description here..."></textarea>
-      </div>
-
-      <div class="grid grid-cols-2 gap-md">
-        <div class="form-group">
-          <label class="form-label" for="background_type">Background Type</label>
-          <select id="background_type" class="form-control">
-            <option value="">Select</option>
-            <option value="tech">Tech</option>
-            <option value="non-tech">Non Tech</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="github_username">GitHub Username</label>
-          <input id="github_username" type="text" class="form-control" placeholder="username" />
-        </div>
-      </div>
-
-      <div id="error-msg" class="error-msg"></div>
-
-      <button id="analyze-btn" class="btn btn-primary" onclick="handleSubmit()">
-        Analyze Resume
-      </button>
-    </div>
-
-    <!-- Results Section -->
-    <section id="results-section" class="results-section container">
-      <div class="card" style="max-width: 900px; margin-top: 3rem;">
-        <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">Analysis Results</h2>
-
-        <div class="results-grid">
-          <!-- Left Column: Scores -->
-          <div>
-            <div class="score-container">
-              <div class="progress-ring">
-                <svg viewBox="0 0 100 100">
-                  <circle class="progress-ring-bg" cx="50" cy="50" r="45"></circle>
-                  <circle id="ring-fill" class="progress-ring-fill" cx="50" cy="50" r="45"></circle>
-                </svg>
-                <div class="progress-ring-text">
-                  <span id="overall-pct" class="progress-ring-value">0%</span>
-                  <span class="progress-ring-label">Match</span>
-                </div>
-              </div>
-              <span id="level-badge" class="badge"></span>
-            </div>
-
-            <div id="breakdown-bars">
-              <!-- Auto-populated by JS -->
-            </div>
-          </div>
-
-          <!-- Right Column: Insights & Skills -->
-          <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-
-            <div id="missing-skills-section" class="missing-skills-container" style="display: none;">
-              <h3 class="section-title" style="color: #FCA5A5; border-color: rgba(239, 68, 68, 0.3);">Priority Missing
-                Skills</h3>
-              <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">These keywords were
-                found in the JD but lack coverage in your resume:</p>
-              <div id="missing-skills-list" class="skills-tags">
-                <!-- Auto-populated -->
-              </div>
-            </div>
-
-            <div>
-              <h3 class="section-title">Better Suited Roles</h3>
-              <div id="alt-roles" style="font-size: 0.95rem; color: var(--text-secondary);"></div>
-            </div>
-
-            <div>
-              <h3 class="section-title">Actionable Insights</h3>
-              <ul id="insights-list" class="insights-list">
-                <!-- Auto-populated -->
-              </ul>
-            </div>
-
-            <div id="github-analysis-section" style="display: none;">
-              <h3 class="section-title" style="color: #60A5FA; border-color: rgba(96, 165, 250, 0.3);">GitHub Deep Scan</h3>
-              <div id="github-analysis-text" style="padding: 1rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; color: #DBEAFE; font-size: 0.95rem; line-height: 1.5;"></div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-      
-      <!-- Interactive Chat Interface - Sage -->
+      <!-- Interactive Chat Interface - Sage (Sidebar) -->
       <div class="chat-container">
         <div class="chat-header">
           <div class="sage-avatar">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path
+                d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z">
+              </path>
+            </svg>
           </div>
           Ask Sage
         </div>
         <div id="chat-messages" class="chat-messages">
           <div class="chat-wrapper ai">
-            <div class="chat-msg msg-ai">Hi! I'm Sage, your AI recruiter. I've finished analyzing your profile. Ask me anything about your resume and how it fits this role!</div>
+            <div class="chat-msg msg-ai">Hi! I'm Sage. Ask me anything!</div>
           </div>
         </div>
-        <div class="chat-input-area">
-          <input type="text" id="chat-input" placeholder="e.g., What specific bullet points should I rewrite?" onkeypress="handleChatKeyPress(event)" />
-          <button id="chat-send-btn" class="chat-btn" onclick="sendChatMessage()">Send</button>
+        <!-- FAQ Section -->
+        <div class="faq-chips" id="faq-chips">
+          <button class="faq-chip" onclick="handleFAQ('How SkillProof ATS works?')">How ATS works?</button>
+          <button class="faq-chip" onclick="handleFAQ('How is the ATS score calculated?')">Score calculation?</button>
+          <button class="faq-chip" onclick="handleFAQ('What is semantic fit?')">Semantic fit?</button>
+          <button class="faq-chip" onclick="handleFAQ('What is Achievement Strength?')">Achievement Fit?</button>
+          <button class="faq-chip" onclick="handleFAQ('What is GitHub Analysis?')">GitHub Analysis?</button>
+          <button class="faq-chip" onclick="handleFAQ('How does GitHub Deep Scan work?')">Deep Scan details?</button>
+          <button class="faq-chip" onclick="handleFAQ('What is the reliability & accuracy?')">Accuracy?</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="tab-analysis" class="tab-pane active fade-in">
+        <div class="main-content">
+          <section class="container hero-section">
+            <h1 class="title">SkillProof ATS</h1>
+            <p class="subtitle">
+              A Resume Intelligence Platform designed to optimize your resume for applicant tracking systems instantly.
+              Upload
+              your resume, paste the job description, and get actionable insights.
+            </p>
+          </section>
+
+          <div class="container card">
+            <!-- Upload Zone -->
+            <div id="drop-zone" class="file-dropzone" onclick="document.getElementById('file-input').click()">
+              <input id="file-input" type="file" accept=".pdf" class="file-input" onchange="handleFileSelect(event)" />
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <div id="idle-state" class="file-idle">
+                <p class="file-drop-text">Click to upload Resume (PDF)</p>
+              </div>
+              <div id="success-state" class="file-success">
+                <p id="file-name"></p>
+              </div>
+            </div>
+
+            <!-- Form Elements -->
+            <div class="form-group">
+              <label class="form-label" for="jd-sample">Sample Job Description</label>
+              <select id="jd-sample" class="form-control" onchange="fillSampleJD()">
+                <option value="">Select Sample JD</option>
+                <option value="software">Software Developer</option>
+                <option value="fullstack">Full Stack Developer</option>
+                <option value="analyst">Senior Data Analyst</option>
+                <option value="hr">HR Manager</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="job_description">Job Description</label>
+              <textarea id="job_description" class="form-control"
+                placeholder="Paste job description here..."></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-md">
+              <div class="form-group">
+                <label class="form-label" for="background_type">Background Type</label>
+                <select id="background_type" class="form-control">
+                  <option value="">Select</option>
+                  <option value="tech">Tech</option>
+                  <option value="non-tech">Non Tech</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="github_username">GitHub Username</label>
+                <input id="github_username" type="text" class="form-control" placeholder="username" />
+              </div>
+            </div>
+
+            <div id="error-msg" class="error-msg"></div>
+
+            <button id="analyze-btn" class="btn btn-primary" onclick="handleSubmit()">
+              Analyze Resume
+            </button>
+          </div>
+
+          <!-- Results Section -->
+          <section id="results-section" class="results-section container">
+            <div class="card" style="max-width: 900px; margin-top: 3rem;">
+              <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">Analysis Results</h2>
+
+              <div class="results-grid">
+                <!-- Left Column: Scores -->
+                <div>
+                  <div class="score-container">
+                    <div class="progress-ring">
+                      <svg viewBox="0 0 100 100">
+                        <circle class="progress-ring-bg" cx="50" cy="50" r="45"></circle>
+                        <circle id="ring-fill" class="progress-ring-fill" cx="50" cy="50" r="45"></circle>
+                      </svg>
+                      <div class="progress-ring-text">
+                        <span id="overall-pct" class="progress-ring-value">0%</span>
+                        <span class="progress-ring-label">Match</span>
+                      </div>
+                    </div>
+                    <span id="level-badge" class="badge"></span>
+                  </div>
+
+                  <div id="breakdown-bars">
+                    <!-- Auto-populated by JS -->
+                  </div>
+                </div>
+
+                <!-- Right Column: Insights & Skills -->
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+                  <div id="missing-skills-section" class="missing-skills-container" style="display: none;">
+                    <h3 class="section-title" style="color: #FCA5A5; border-color: rgba(239, 68, 68, 0.3);">Priority
+                      Missing
+                      Skills</h3>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">These keywords
+                      were
+                      found in the JD but lack coverage in your resume:</p>
+                    <div id="missing-skills-list" class="skills-tags">
+                      <!-- Auto-populated -->
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 class="section-title">Better Suited Roles</h3>
+                    <div id="alt-roles" style="font-size: 0.95rem; color: var(--text-secondary);"></div>
+                  </div>
+
+                  <div>
+                    <h3 class="section-title">Actionable Insights</h3>
+                    <ul id="insights-list" class="insights-list">
+                      <!-- Auto-populated -->
+                    </ul>
+                  </div>
+
+                  <div id="github-analysis-section" style="display: none;">
+                    <h3 class="section-title" style="color: #60A5FA; border-color: rgba(96, 165, 250, 0.3);">GitHub Deep
+                      Scan</h3>
+                    <div id="github-analysis-text"
+                      style="padding: 1rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; color: #DBEAFE; font-size: 0.95rem; line-height: 1.5;">
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+
+
+          </section>
+        </div>
+      </div> <!-- end tab-analysis -->
+
+      <div id="tab-about" class="tab-pane fade-in">
+        <div class="container" style="max-width: 900px; padding-top: 4rem;">
+          <h1 class="title">About SkillProof ATS</h1>
+          <p class="subtitle" style="margin-left: 0; max-width: 100%; margin-bottom: 2rem;">
+            Discover the intelligence behind our modern recruitment platform.
+          </p>
+
+          <div class="card" style="margin: 0; max-width: 100%; text-align: left;">
+            <div style="display: flex; gap: 2rem; flex-direction: column;">
+              <div>
+                <h2 class="section-title" style="border-color: rgba(59, 130, 246, 0.3); color: #60A5FA;">Introduction
+                </h2>
+                <p style="color: var(--text-secondary); line-height: 1.8; margin-top: 1rem;">
+                  SkillProof ATS is an advanced Applicant Tracking System powered by AI. It moves beyond simple keyword
+                  matching and
+                  understands the semantic context of your experiences. By combining deep analysis of your resume and
+                  your public
+                  achievements (like GitHub repositories), SkillProof provides actionable insights into how well your
+                  profile aligns
+                  with specific job descriptions.
+                </p>
+              </div>
+
+              <div>
+                <h2 class="section-title" style="border-color: rgba(16, 185, 129, 0.3); color: #34D399;">How It Works
+                </h2>
+                <ol
+                  style="color: var(--text-secondary); line-height: 1.8; margin-top: 1rem; padding-left: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <li><strong>Data Parsing:</strong> You upload your resume (PDF) and provide the target Job
+                    Description.</li>
+                  <li><strong>AI Engine Analysis:</strong> Our engine compares the semantic meaning of your skills
+                    against the requirements.</li>
+                  <li><strong>External Integrations:</strong> If you provide a GitHub username, we perform a deep scan
+                    of your repositories to find actual evidence of your skills.</li>
+                  <li><strong>Actionable Feedback:</strong> You receive an instant dashboard showing an overall match,
+                    priority missing skills, score breakdowns, and detailed insights to improve your chances.</li>
+                  <li><strong>Ask Sage:</strong> Your AI Recruiter "Sage" is available to answer custom questions about
+                    your resume's fit.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> <!-- end tab-about -->
+
+      <div id="tab-candidates" class="tab-pane fade-in">
+        <div class="container"
+          style="padding-top: 4rem; display: flex; align-items: center; justify-content: center; height: 80vh;">
+          <h2 style="color: var(--text-muted);">Candidates placeholder</h2>
         </div>
       </div>
 
-    </section>
-  </main>
+      <div id="tab-settings" class="tab-pane fade-in">
+        <div class="container"
+          style="padding-top: 4rem; display: flex; align-items: center; justify-content: center; height: 80vh;">
+          <h2 style="color: var(--text-muted);">Settings placeholder</h2>
+        </div>
+      </div>
+    </main>
+  </div>
 
   <script>
     let globalResumeText = "";
@@ -299,7 +425,7 @@ Experience with HR analytics, talent management strategies, and HR software syst
         const data = await res.json();
         globalResumeText = data.resume_text_cached || "";
         globalJobDesc = job;
-        
+
         showResults(data);
       } catch (err) {
         showError("Backend not reachable or error processing your request.");
@@ -395,66 +521,84 @@ Experience with HR analytics, talent management strategies, and HR software syst
       }
     }
 
-    // --- Chat Logic ---
-    function handleChatKeyPress(e) {
-      if(e.key === "Enter") sendChatMessage();
-    }
+    const faqAnswers = {
+      'How SkillProof ATS works?': "SkillProof ATS uses a semantic AI engine. Instead of just looking for exact keyword matches, it understands the context of your resume and compares it against the job description to find true alignment.",
+      'How is the ATS score calculated?': "Your ATS score is a weighted combination of three factors: Semantic Fit (how well your experience matches the JD), Achievement Strength (your use of measurable results), and your GitHub Technical Impact.",
+      'What is semantic fit?': "Semantic fit goes beyond keywords. It means the ATS understands that a 'Software Engineer' who built 'RESTful microservices' is highly related to a JD asking for a 'Backend Developer' with 'API' experience.",
+      'What is Achievement Strength?': "Achievement Strength evaluates the impact of your work. The engine looks for quantifiable metrics, success indicators, and clear 'action-to-result' statements in your resume bullet points rather than just a list of duties.",
+      'What is GitHub Analysis?': "GitHub Analysis is a unique feature that extracts raw coding data from your public GitHub profile and factors it into your overall ATS score to prove you actually write the code you claim on your resume.",
+      'How does GitHub Deep Scan work?': "The Deep Scan pulls your repositories, languages, and commit history via the GitHub API. The AI engine then cross-references your specific coding languages directly with the requirements in the Job Description to provide a technical confidence rating.",
+      'What is the reliability & accuracy?': "Our accuracy is very high because we don't rely on simple keyword scraping. By combining Gemini's language models with direct integrations to tools like GitHub, we capture a holistic view of your actual technical skills."
+    };
 
-    async function sendChatMessage() {
-      const inputEl = document.getElementById("chat-input");
-      const text = inputEl.value.trim();
-      if(!text) return;
+    function handleFAQ(question) {
+      if (!faqAnswers[question]) return;
 
       const msgsDiv = document.getElementById("chat-messages");
-      
-      // Add user msg
-      msgsDiv.innerHTML += `
+
+      msgsDiv.insertAdjacentHTML('beforeend', `
         <div class="chat-wrapper user">
-          <div class="chat-msg msg-user">${text}</div>
-        </div>`;
-      inputEl.value = "";
+          <div class="chat-msg msg-user">${question}</div>
+        </div>`);
+
+      const answerText = faqAnswers[question];
+      const msgId = "msg-faq-" + Date.now();
+
+      msgsDiv.insertAdjacentHTML('beforeend', `
+        <div class="chat-wrapper ai">
+          <div id="${msgId}" class="chat-msg msg-ai"></div>
+        </div>`);
+
+      const targetEl = document.getElementById(msgId);
+      if (!targetEl) return;
       
-      // Temporary AI loading msg
-      const loadingId = "load-" + Date.now();
-      msgsDiv.innerHTML += `
-        <div id="${loadingId}" class="chat-wrapper ai">
-          <div class="chat-msg msg-ai typing-indicator">
-            <span></span><span></span><span></span>
-          </div>
-        </div>`;
-      msgsDiv.scrollTop = msgsDiv.scrollHeight;
+      let i = 0;
 
-      // Ensure we hit the backend
-      try {
-        const res = await fetch("http://127.0.0.1:8000/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            resume_text: globalResumeText,
-            job_description: globalJobDesc,
-            question: text
-          })
-        });
-
-        const data = await res.json();
-        document.getElementById(loadingId).remove();
-        
-        // Use marked.js or basic replace to nicely format Gemini output
-        let answerText = data.answer.replace(/\n/g, "<br/>").replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
-        
-        msgsDiv.innerHTML += `
-          <div class="chat-wrapper ai">
-            <div class="chat-msg msg-ai">${answerText}</div>
-          </div>`;
-      } catch (e) {
-        document.getElementById(loadingId).remove();
-        msgsDiv.innerHTML += `
-          <div class="chat-wrapper ai">
-            <div class="chat-msg msg-ai" style="color:red">Oops! Backend failed to respond. Make sure uvicorn is running.</div>
-          </div>`;
+      function type() {
+        if (i < answerText.length) {
+          targetEl.innerHTML = answerText.substring(0, i + 1);
+          i++;
+          msgsDiv.scrollTop = msgsDiv.scrollHeight;
+          setTimeout(type, 15);
+        }
       }
-      msgsDiv.scrollTop = msgsDiv.scrollHeight;
+      type();
+    }
+
+    // --- Sidebar Toggle ---
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      const toggleBtn = document.getElementById('sidebar-toggle');
+      const isCollapsed = sidebar.classList.toggle('collapsed');
+      overlay.classList.toggle('active', isCollapsed);
+      toggleBtn.classList.toggle('open', !isCollapsed);
+    }
+
+    // Collapse sidebar by default on mobile on load
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.innerWidth <= 768) {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.add('collapsed');
+      }
+    });
+
+    function switchTab(tabId, btnElement) {
+      document.querySelectorAll('.tab-pane').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      const selectedTab = document.getElementById('tab-' + tabId);
+      if (selectedTab) selectedTab.classList.add('active');
+
+      if (btnElement) btnElement.classList.add('active');
+
+      document.querySelector('.dashboard-main').scrollTop = 0;
     }
   </script>
 </body>
+
 </html>
