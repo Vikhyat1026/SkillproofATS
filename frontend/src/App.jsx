@@ -5,18 +5,32 @@ import Analysis from './components/Analysis';
 import SageChat from './components/SageChat';
 import Auth from './components/Auth';
 import About from './components/About';
+import History from './components/History';
+import Profile from './components/Profile';
+import JDLibrary from './components/JDLibrary';
+import ResumeVault from './components/ResumeVault';
 
 function App() {
   const [activeTab, setActiveTab] = useState('analysis');
   const [session, setSession] = useState(null);
+  const [selectedJD, setSelectedJD] = useState('');
+  const [selectedResume, setSelectedResume] = useState(null);
+
+  const handleSelectJD = (jd) => {
+    setSelectedJD(jd.content);
+    setActiveTab('analysis');
+  };
+
+  const handleSelectResume = (resume) => {
+    setSelectedResume(resume);
+    setActiveTab('analysis');
+  };
 
   useEffect(() => {
-    // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
@@ -25,48 +39,42 @@ function App() {
   }, []);
 
   const renderContent = () => {
-    // If on candidates tab and not logged in, show Auth
-    if (activeTab === 'candidates' && !session) {
+    // Shared check: if on a protected tab and not logged in, show Auth
+    const protectedTabs = ['history', 'candidates', 'library', 'vault'];
+    if (protectedTabs.includes(activeTab) && !session) {
       return <Auth />;
     }
     
-    // Logged in user on candidates tab might see their profile/history
-    if (activeTab === 'candidates' && session) {
-      return (
-        <div className="container" style={{ paddingTop: '4rem', textAlign: 'center' }}>
-          <h1 className="title">Welcome, {session.user.user_metadata?.full_name || session.user.email}</h1>
-          <p className="subtitle">You are logged in and ready to analyze.</p>
-          <button className="btn btn-primary mt-8" style={{ maxWidth: '200px' }} onClick={() => supabase.auth.signOut()}>
-            Sign Out
-          </button>
-        </div>
-      );
-    }
-
     switch (activeTab) {
       case 'analysis':
         return (
           <>
-            <Analysis />
+            <Analysis 
+              session={session} 
+              initialJD={selectedJD} 
+              initialResume={selectedResume} 
+            />
             <SageChat />
           </>
         );
+      case 'history':
+        return <History session={session} />;
+      case 'library':
+        return <JDLibrary session={session} onSelectJD={handleSelectJD} />;
+      case 'vault':
+        return <ResumeVault session={session} onSelectResume={handleSelectResume} />;
+      case 'candidates':
+        return <Profile session={session} onSignOut={() => supabase.auth.signOut()} />;
       case 'about':
         return <About />;
-      case 'settings':
-        return (
-          <div className="container" style={{ paddingTop: '4rem', textAlign: 'center', height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <h2 style={{ color: 'var(--text-muted)' }}>Settings placeholder</h2>
-          </div>
-        );
       default:
-        return <Analysis />;
+        return <Analysis session={session} initialJD={selectedJD} initialResume={selectedResume} />;
     }
   };
 
   return (
     <div className="dashboard-layout">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} session={session} />
       
       <main className="dashboard-main">
         <div className={`tab-pane active fade-in`}>

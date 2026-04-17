@@ -7,3 +7,4 @@ pdfplumber
 python-multipart
 requests
 python-dotenv
+gunicorn

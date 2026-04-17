@@ -5,10 +5,13 @@ import {
   Info, 
   Settings, 
   ChevronLeft, 
-  ChevronRight 
+  ChevronRight,
+  Clock,
+  Bookmark,
+  Database
 } from 'lucide-react';
 
-const Sidebar = ({ activeTab, setActiveTab }) => {
+const Sidebar = ({ activeTab, setActiveTab, session }) => {
   const [collapsed, setCollapsed] = useState(false);
 
   // Initial mobile collapse - only runs once on mount
@@ -28,10 +31,19 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   }, [collapsed]);
 
   const navItems = [
-    { id: 'candidates', label: 'Login', icon: User },
     { id: 'analysis', label: 'Analysis', icon: BarChart2 },
+    // If not logged in, show Login (candidates)
+    // If logged in, show History, Library, Vault, and Profile
+    ...(session 
+      ? [
+          { id: 'history', label: 'History', icon: Clock },
+          { id: 'library', label: 'Library', icon: Bookmark },
+          { id: 'vault', label: 'Vault', icon: Database },
+          { id: 'candidates', label: 'Profile', icon: User }
+        ]
+      : [{ id: 'candidates', label: 'Sign In', icon: User }] 
+    ),
     { id: 'about', label: 'About', icon: Info },
-    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   const toggleSidebar = () => setCollapsed(!collapsed);
@@ -58,7 +70,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`} id="sidebar">
         <div className="sidebar-brand">
           <img src="/logo.png" alt="SkillProof ATS" onError={(e) => e.target.style.display='none'} />
-          <span>SkillProof<span style={{ color: 'var(--accent-primary)' }}>.</span></span>
+          <span>SkillProof <span style={{ color: 'var(--accent-primary)' }}>ATS</span></span>
         </div>
 
         <nav className="sidebar-nav">

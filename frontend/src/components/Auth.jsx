@@ -59,6 +59,17 @@ const Auth = () => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setError('');
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin
+      }
+    });
+    if (error) setError(error.message);
+  };
+
   const isSignup = mode === 'signup';
 
   return (
@@ -176,8 +187,12 @@ const Auth = () => {
           <div style={{ flex: 1, height: '1px', background: 'var(--border-light)' }}></div>
         </div>
 
-        {/* Google OAuth placeholder */}
-        <button className="google-btn" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '0.75rem', borderRadius: 'var(--radius-full)', border: '1px solid var(--border-light)', background: 'transparent', color: 'white', cursor: 'pointer', fontSize: '0.9rem' }}>
+        {/* Google OAuth */}
+        <button 
+          className="google-btn" 
+          onClick={handleGoogleLogin}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '0.75rem', borderRadius: 'var(--radius-full)', border: '1px solid var(--border-light)', background: 'transparent', color: 'white', cursor: 'pointer', fontSize: '0.9rem' }}
+        >
           <svg width="18" height="18" viewBox="0 0 48 48">
             <path fill="#EA4335" d="M24 9.5c3.54 0 6.72 1.22 9.23 3.22l6.86-6.86C35.82 2.36 30.28 0 24 0 14.82 0 6.96 5.48 3.02 13.44l8 6.2C12.93 13.4 17.99 9.5 24 9.5z"/>
             <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>

@@ -90,6 +90,22 @@ async def analyze_pdf(
     return analyze_candidate(data)
 
 
+@app.post("/analyze-text")
+async def analyze_text(
+    resume_text: str = Form(""),
+    job_description: str = Form(""),
+    background_type: str = Form(""),
+    github_username: str | None = Form(None)
+):
+    data = AnalyzeRequest(
+        resume_text=resume_text,
+        job_description=job_description,
+        background_type=background_type,
+        github_username=github_username
+    )
+    return analyze_candidate(data)
+
+
 # ---------- Core Logic ----------
 
 def analyze_candidate(data: AnalyzeRequest):
