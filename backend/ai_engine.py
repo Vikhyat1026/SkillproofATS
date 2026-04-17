@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-# Use the latest Flash model for extreme speed and precision
-model = genai.GenerativeModel('gemini-2.5-flash')
+# Use the latest stable Flash model
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 def calculate_match_and_missing_skills(resume_text, job_description):
     """Computes a semantic match score and missing skills via GenAI."""

@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillProof ATS</title>
+  <link rel="stylesheet" href="styles.css" />
+
+</head>
+
+<body>
+  <!-- Mobile overlay backdrop -->
+  <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+  <!-- Floating reopen pill — visible only when sidebar is collapsed -->
+  <button class="sidebar-reopen-btn" id="sidebar-reopen" onclick="toggleSidebar()" aria-label="Open Sidebar">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </button>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <img src="logo.png" alt="SkillProof ATS" onerror="this.style.display='none'" />
+        <span>SkillProof<span style="color: var(--accent-primary)">.</span></span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item" onclick="switchTab('candidates', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          Login
+        </button>
+        <button class="nav-item active" onclick="switchTab('analysis', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Analysis
+        </button>
+        <button class="nav-item" onclick="switchTab('about', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          About
+        </button>
+        <button class="nav-item" onclick="switchTab('settings', this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+            </path>
+          </svg>
+          Settings
+        </button>
+      </nav>
+
+      <!-- Collapse tab — peeks out from sidebar's right edge -->
+      <button class="sidebar-collapse-tab" id="sidebar-toggle" onclick="toggleSidebar()" aria-label="Collapse Sidebar" title="Collapse sidebar">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+
+    </aside>
+
+    <main class="dashboard-main">
+      <div id="tab-analysis" class="tab-pane active fade-in">
+        <div class="main-content">
+          <section class="container hero-section">
+            <h1 class="title">SkillProof ATS</h1>
+            <p class="subtitle">
+              A Resume Intelligence Platform designed to optimize your resume for applicant tracking systems instantly.
+              Upload
+              your resume, paste the job description, and get actionable insights.
+            </p>
+          </section>
+
+          <div class="container card">
+            <!-- Upload Zone -->
+            <div id="drop-zone" class="file-dropzone" onclick="document.getElementById('file-input').click()">
+              <input id="file-input" type="file" accept=".pdf" class="file-input" onchange="handleFileSelect(event)" />
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <div id="idle-state" class="file-idle">
+                <p class="file-drop-text">Click to upload Resume (PDF)</p>
+              </div>
+              <div id="success-state" class="file-success">
+                <p id="file-name"></p>
+              </div>
+            </div>
+
+            <!-- Form Elements -->
+            <div class="form-group">
+              <label class="form-label" for="jd-sample">Sample Job Description</label>
+              <select id="jd-sample" class="form-control" onchange="fillSampleJD()">
+                <option value="">Select Sample JD</option>
+                <option value="software">Software Developer</option>
+                <option value="fullstack">Full Stack Developer</option>
+                <option value="analyst">Senior Data Analyst</option>
+                <option value="hr">HR Manager</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="job_description">Job Description</label>
+              <textarea id="job_description" class="form-control"
+                placeholder="Paste job description here..."></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-md">
+              <div class="form-group">
+                <label class="form-label" for="background_type">Background Type</label>
+                <select id="background_type" class="form-control">
+                  <option value="">Select</option>
+                  <option value="tech">Tech</option>
+                  <option value="non-tech">Non Tech</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="github_username">GitHub Username</label>
+                <input id="github_username" type="text" class="form-control" placeholder="username" />
+              </div>
+            </div>
+
+            <div id="error-msg" class="error-msg"></div>
+
+            <button id="analyze-btn" class="btn btn-primary" onclick="handleSubmit()">
+              Analyze Resume
+            </button>
+          </div>
+
+          <!-- Results Section -->
+          <section id="results-section" class="results-section container">
+            <div class="card" style="max-width: 900px; margin-top: 3rem;">
+              <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">Analysis Results</h2>
+
+              <div class="results-grid">
+                <!-- Left Column: Scores -->
+                <div>
+                  <div class="score-container">
+                    <div class="progress-ring">
+                      <svg viewBox="0 0 100 100">
+                        <circle class="progress-ring-bg" cx="50" cy="50" r="45"></circle>
+                        <circle id="ring-fill" class="progress-ring-fill" cx="50" cy="50" r="45"></circle>
+                      </svg>
+                      <div class="progress-ring-text">
+                        <span id="overall-pct" class="progress-ring-value">0%</span>
+                        <span class="progress-ring-label">Match</span>
+                      </div>
+                    </div>
+                    <span id="level-badge" class="badge"></span>
+                  </div>
+
+                  <div id="breakdown-bars">
+                    <!-- Auto-populated by JS -->
+                  </div>
+                </div>
+
+                <!-- Right Column: Insights & Skills -->
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+                  <div id="missing-skills-section" class="missing-skills-container" style="display: none;">
+                    <h3 class="section-title" style="color: #FCA5A5; border-color: rgba(239, 68, 68, 0.3);">Priority
+                      Missing
+                      Skills</h3>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">These keywords
+                      were
+                      found in the JD but lack coverage in your resume:</p>
+                    <div id="missing-skills-list" class="skills-tags">
+                      <!-- Auto-populated -->
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 class="section-title">Better Suited Roles</h3>
+                    <div id="alt-roles" style="font-size: 0.95rem; color: var(--text-secondary);"></div>
+                  </div>
+
+                  <div>
+                    <h3 class="section-title">Actionable Insights</h3>
+                    <ul id="insights-list" class="insights-list">
+                      <!-- Auto-populated -->
+                    </ul>
+                  </div>
+
+                  <div id="github-analysis-section" style="display: none;">
+                    <h3 class="section-title" style="color: #60A5FA; border-color: rgba(96, 165, 250, 0.3);">GitHub Deep
+                      Scan</h3>
+                    <div id="github-analysis-text"
+                      style="padding: 1rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; color: #DBEAFE; font-size: 0.95rem; line-height: 1.5;">
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Ask Sage Chat (Analysis Section) ── -->
+            <div class="sage-section">
+              <div class="chat-container">
+                <div class="chat-header">
+                  <div class="sage-avatar">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                    </svg>
+                  </div>
+                  Ask Sage
+                  <span style="margin-left: auto; font-size: 0.75rem; color: var(--text-muted); font-weight: 400; font-family: var(--font-body);">Click a question below ↓</span>
+                </div>
+                <div id="chat-messages" class="chat-messages">
+                  <div class="chat-wrapper ai">
+                    <div class="chat-msg msg-ai">Hi! I'm Sage, your AI recruiter. I've analyzed your profile — click any question below or ask me anything about your resume fit!</div>
+                  </div>
+                </div>
+                <!-- FAQ chips -->
+                <div class="faq-chips" id="faq-chips">
+                  <button class="faq-chip" onclick="handleFAQ('How SkillProof ATS works?')">How ATS works?</button>
+                  <button class="faq-chip" onclick="handleFAQ('How is the ATS score calculated?')">Score calculation?</button>
+                  <button class="faq-chip" onclick="handleFAQ('What is semantic fit?')">Semantic fit?</button>
+                  <button class="faq-chip" onclick="handleFAQ('What is Achievement Strength?')">Achievement Fit?</button>
+                  <button class="faq-chip" onclick="handleFAQ('What is GitHub Analysis?')">GitHub Analysis?</button>
+                  <button class="faq-chip" onclick="handleFAQ('How does GitHub Deep Scan work?')">Deep Scan details?</button>
+                  <button class="faq-chip" onclick="handleFAQ('What is the reliability & accuracy?')">Accuracy?</button>
+                </div>
+              </div>
+            </div>
+
+          </section>
+        </div>
+      </div> <!-- end tab-analysis -->
+
+      <div id="tab-about" class="tab-pane fade-in">
+        <div class="container" style="max-width: 900px; padding-top: 4rem;">
+          <h1 class="title">About SkillProof ATS</h1>
+          <p class="subtitle" style="margin-left: 0; max-width: 100%; margin-bottom: 2rem;">
+            Discover the intelligence behind our modern recruitment platform.
+          </p>
+
+          <div class="card" style="margin: 0; max-width: 100%; text-align: left;">
+            <div style="display: flex; gap: 2rem; flex-direction: column;">
+              <div>
+                <h2 class="section-title" style="border-color: rgba(59, 130, 246, 0.3); color: #60A5FA;">Introduction
+                </h2>
+                <p style="color: var(--text-secondary); line-height: 1.8; margin-top: 1rem;">
+                  SkillProof ATS is an advanced Applicant Tracking System powered by AI. It moves beyond simple keyword
+                  matching and
+                  understands the semantic context of your experiences. By combining deep analysis of your resume and
+                  your public
+                  achievements (like GitHub repositories), SkillProof provides actionable insights into how well your
+                  profile aligns
+                  with specific job descriptions.
+                </p>
+              </div>
+
+              <div>
+                <h2 class="section-title" style="border-color: rgba(16, 185, 129, 0.3); color: #34D399;">How It Works
+                </h2>
+                <ol
+                  style="color: var(--text-secondary); line-height: 1.8; margin-top: 1rem; padding-left: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <li><strong>Data Parsing:</strong> You upload your resume (PDF) and provide the target Job
+                    Description.</li>
+                  <li><strong>AI Engine Analysis:</strong> Our engine compares the semantic meaning of your skills
+                    against the requirements.</li>
+                  <li><strong>External Integrations:</strong> If you provide a GitHub username, we perform a deep scan
+                    of your repositories to find actual evidence of your skills.</li>
+                  <li><strong>Actionable Feedback:</strong> You receive an instant dashboard showing an overall match,
+                    priority missing skills, score breakdowns, and detailed insights to improve your chances.</li>
+                  <li><strong>Ask Sage:</strong> Your AI Recruiter "Sage" is available to answer custom questions about
+                    your resume's fit.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> <!-- end tab-about -->
+
+      <div id="tab-candidates" class="tab-pane fade-in">
+        <div class="login-page">
+          <!-- Decorative background glow -->
+          <div class="login-glow"></div>
+
+          <div class="login-card">
+            <!-- Header -->
+            <div class="login-card-header">
+              <div class="login-logo">
+                <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+              </div>
+              <h1 class="login-title">Welcome Back</h1>
+              <p class="login-subtitle">Sign in to your SkillProof account</p>
+            </div>
+
+            <!-- Mode toggle -->
+            <div class="login-mode-toggle">
+              <button id="btn-signin" class="mode-btn active" onclick="switchLoginMode('signin')">Sign In</button>
+              <button id="btn-signup" class="mode-btn" onclick="switchLoginMode('signup')">Sign Up</button>
+            </div>
+
+            <!-- Form -->
+            <form id="auth-form" class="login-form" onsubmit="handleAuth(event)">
+              <!-- Sign Up only field -->
+              <div id="field-name" class="form-group" style="display:none;">
+                <label class="form-label" for="auth-name">Full Name</label>
+                <input id="auth-name" type="text" class="form-control" placeholder="John Doe" autocomplete="name" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="auth-email">Email Address</label>
+                <input id="auth-email" type="email" class="form-control" placeholder="you@example.com" required autocomplete="email" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="auth-password">Password</label>
+                <div class="password-wrapper">
+                  <input id="auth-password" type="password" class="form-control" placeholder="••••••••" required autocomplete="current-password" />
+                  <button type="button" class="password-toggle" onclick="togglePassword()" tabindex="-1">
+                    <svg id="eye-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Confirm password (sign up only) -->
+              <div id="field-confirm" class="form-group" style="display:none;">
+                <label class="form-label" for="auth-confirm">Confirm Password</label>
+                <input id="auth-confirm" type="password" class="form-control" placeholder="••••••••" autocomplete="new-password" />
+              </div>
+
+              <div id="auth-error" class="error-msg" style="margin-bottom: 0.5rem;"></div>
+              <div id="auth-success" class="auth-success-msg"></div>
+
+              <button type="submit" id="auth-submit-btn" class="btn btn-primary" style="width:100%; margin-top:0.5rem;">
+                Sign In
+              </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="login-divider"><span>or continue with</span></div>
+
+            <!-- Google OAuth placeholder -->
+            <button class="google-btn" onclick="handleGoogleLogin()">
+              <svg width="18" height="18" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.72 1.22 9.23 3.22l6.86-6.86C35.82 2.36 30.28 0 24 0 14.82 0 6.96 5.48 3.02 13.44l8 6.2C12.93 13.4 17.99 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-8-6.2C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.53 10.78l8-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.02 0-11.11-3.93-12.93-9.24l-8 6.19C6.96 42.62 14.82 48 24 48z"/>
+              </svg>
+              Continue with Google
+            </button>
+
+            <p class="login-footnote">By continuing you agree to SkillProof's <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-settings" class="tab-pane fade-in">
+        <div class="container"
+          style="padding-top: 4rem; display: flex; align-items: center; justify-content: center; height: 80vh;">
+          <h2 style="color: var(--text-muted);">Settings placeholder</h2>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ── SUPABASE CLIENT (safe init — won't crash app if CDN fails) ──
+    const SUPABASE_URL = 'https://qkwctkamgatfqlvgnfij.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrd2N0a2FtZ2F0ZnFsdmduZmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMTQwNjEsImV4cCI6MjA5MTg5MDA2MX0.Z-HuwIdbyLAQ3UgKCsjMA5L-NblX-m-WxVtfIzuNZAc';
+    let _supabase = null;
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch (e) {
+      console.warn('Supabase init skipped:', e.message);
+    }
+
+    let globalResumeText = "";
+    let globalJobDesc = "";
+    let selectedFile = null;
+
+    function handleFileSelect(e) {
+      if (e.target.files && e.target.files[0]) {
+        selectedFile = e.target.files[0];
+        document.getElementById("file-name").textContent = selectedFile.name;
+        document.getElementById("idle-state").classList.add("hidden");
+        document.getElementById("success-state").classList.add("active");
+      }
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("error-msg");
+      el.textContent = msg;
+      el.classList.add("active");
+    }
+
+    function hideError() {
+      document.getElementById("error-msg").classList.remove("active");
+    }
+
+    const sampleJDs = {
+      software: `We are looking for a Software Developer who will be responsible for designing, developing, and maintaining scalable software applications. The ideal candidate should be passionate about writing clean code, solving complex problems, and collaborating with cross-functional teams to deliver high-quality products.
+
+Key Responsibilities:
+• Design, develop and maintain scalable software applications.
+• Write clean, efficient, and maintainable code.
+• Develop backend services and APIs using modern frameworks.
+• Collaborate with product managers and designers to build new features.
+• Debug and troubleshoot software issues to ensure system reliability.
+
+Required Skills:
+Python, REST APIs, Database Management, Git, Software Development Principles.
+
+Preferred Skills:
+Experience with cloud platforms such as AWS or Azure, containerization tools like Docker, and microservices architecture.`,
+
+      fullstack: `We are looking for a talented Full Stack Developer who is comfortable working on both frontend and backend technologies. The candidate should have experience building modern web applications and working with databases and APIs.
+
+Key Responsibilities:
+• Develop responsive user interfaces using modern JavaScript frameworks.
+• Design and implement backend services and APIs.
+• Integrate frontend components with backend systems.
+• Optimize application performance and ensure scalability.
+• Participate in code reviews and maintain high coding standards.
+
+Required Skills:
+JavaScript, React, Node.js, SQL, REST APIs, Git.
+
+Preferred Skills:
+Experience with cloud services, Docker, CI/CD pipelines, and modern UI frameworks.`,
+
+      analyst: `We are looking for a Senior Data Analyst who will be responsible for analyzing large datasets and providing actionable insights to support business decisions. The candidate should have strong analytical thinking and the ability to communicate insights effectively.
+
+Key Responsibilities:
+• Analyze complex datasets to identify trends and patterns.
+• Build dashboards and reports to support business decision-making.
+• Work with stakeholders to understand analytical requirements.
+• Develop data models and ensure data accuracy.
+• Present insights and recommendations to business teams.
+
+Required Skills:
+Python, SQL, Data Analysis, Excel, Statistical Analysis.
+
+Preferred Skills:
+Experience with visualization tools such as Tableau or Power BI and familiarity with machine learning concepts.`,
+
+      hr: `We are looking for an experienced HR Manager responsible for managing recruitment, employee engagement, and HR operations. The candidate will play a key role in developing HR strategies and supporting organizational growth.
+
+Key Responsibilities:
+• Manage end-to-end recruitment and hiring processes.
+• Develop and implement employee engagement initiatives.
+• Oversee HR operations including policies, onboarding, and training.
+• Support leadership in workforce planning and performance management.
+• Ensure compliance with HR regulations and company policies.
+
+Required Skills:
+Recruitment, HR Operations, Employee Engagement, Communication, Organizational Management.
+
+Preferred Skills:
+Experience with HR analytics, talent management strategies, and HR software systems.`
+    };
+
+    function fillSampleJD() {
+      const selected = document.getElementById("jd-sample").value;
+      if (sampleJDs[selected]) {
+        document.getElementById("job_description").value = sampleJDs[selected];
+      }
+    }
+
+    function parsePct(val) {
+      return parseInt(String(val || "0").replace("%", ""));
+    }
+
+    async function handleSubmit() {
+      hideError();
+
+      const job = document.getElementById("job_description").value.trim();
+      const type = document.getElementById("background_type").value;
+      const github = document.getElementById("github_username").value.trim();
+
+      if (!selectedFile) return showError("Upload resume (PDF)");
+      if (!job) return showError("Enter job description");
+      if (!type) return showError("Select background type");
+
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("job_description", job);
+      formData.append("background_type", type);
+      if (github) {
+        formData.append("github_username", github);
+      }
+
+      const btn = document.getElementById("analyze-btn");
+      btn.disabled = true;
+      btn.textContent = "Analyzing...";
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/analyze", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) throw new Error("Network response was not ok");
+
+        const data = await res.json();
+        globalResumeText = data.resume_text_cached || "";
+        globalJobDesc = job;
+
+        showResults(data);
+        // Save to Supabase if user is logged in
+        saveAnalysisToDb(data, job, type, github);
+      } catch (err) {
+        showError("Backend not reachable or error processing your request.");
+        console.error(err);
+      }
+
+      btn.disabled = false;
+      btn.textContent = "Analyze Resume";
+    }
+
+    // ── Save analysis result to Supabase ──
+    async function saveAnalysisToDb(data, jobDescription, backgroundType, githubUsername) {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user) return; // Not logged in — skip silently
+
+      const userId = session.session.user.id;
+      const score = parseInt((data.overall_match || '0').replace('%', ''), 10);
+
+      const { error } = await supabase.from('analyses').insert({
+        user_id:              userId,
+        job_description:      jobDescription,
+        background_type:      backgroundType,
+        github_username:      githubUsername || null,
+        overall_score:        isNaN(score) ? 0 : score,
+        semantic_fit:         data.breakdown?.semantic_fit || null,
+        achievement_strength: data.breakdown?.achievement_strength || null,
+        github_strength:      data.breakdown?.github_strength || null,
+        missing_skills:       JSON.stringify(data.missing_skills || []),
+        insights:             JSON.stringify(data.insights || []),
+        alternative_roles:    JSON.stringify(data.alternative_roles || []),
+        github_analysis:      data.github_analysis || null
+      });
+
+      if (error) console.warn('Could not save analysis:', error.message);
+      else console.log('✓ Analysis saved to Supabase');
+    }
+
+    function showResults(data) {
+      document.getElementById("results-section").classList.add("active");
+
+      // Scroll to results cleanly
+      setTimeout(() => {
+        document.getElementById("results-section").scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+
+      document.getElementById("overall-pct").textContent = data.overall_match;
+      document.getElementById("level-badge").textContent = data.match_level;
+
+      const pct = parsePct(data.overall_match);
+      const circumference = 283; // 2 * PI * r (r=45)
+      const offset = circumference - (pct / 100) * circumference;
+
+      setTimeout(() => {
+        document.getElementById("ring-fill").style.strokeDashoffset = offset;
+      }, 100);
+
+      const bars = document.getElementById("breakdown-bars");
+      bars.innerHTML = "";
+
+      const items = [
+        ["Semantic Fit", data.breakdown.semantic_fit],
+        ["Achievement Strength", data.breakdown.achievement_strength],
+        ["GitHub Impact", data.breakdown.github_strength],
+      ];
+
+      let htmlContent = "";
+      items.forEach(([label, val]) => {
+        const p = parsePct(val);
+        htmlContent += `
+            <div class="breakdown-item">
+              <div class="breakdown-header">
+                <span>${label}</span>
+                <span class="breakdown-value">${val}</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div style="width: ${p}%" class="progress-bar-fill"></div>
+              </div>
+            </div>
+        `;
+      });
+      bars.innerHTML = htmlContent;
+
+      const roles = document.getElementById("alt-roles");
+      roles.innerHTML = "";
+      if (data.alternative_roles && data.alternative_roles.length > 0) {
+        data.alternative_roles.forEach((r) => {
+          roles.innerHTML += `<div>• ${r}</div>`;
+        });
+      } else {
+        roles.innerHTML = `<div style="font-style: italic; opacity: 0.6;">Current role seems to be the best fit.</div>`;
+      }
+
+      const insights = document.getElementById("insights-list");
+      insights.innerHTML = "";
+      (data.insights || []).forEach((i) => {
+        insights.innerHTML += `<li>${i}</li>`;
+      });
+
+      // Handle Missing Skills specific visual formatting
+      const missingSkillsContainer = document.getElementById("missing-skills-section");
+      const missingSkillsList = document.getElementById("missing-skills-list");
+      missingSkillsList.innerHTML = "";
+
+      if (data.missing_skills && data.missing_skills.length > 0) {
+        missingSkillsContainer.style.display = "block";
+        data.missing_skills.forEach(skill => {
+          missingSkillsList.innerHTML += `<span class="skill-tag">${skill}</span>`;
+        });
+      } else {
+        missingSkillsContainer.style.display = "none";
+      }
+
+      // Handle GitHub Deep Scan UI
+      const githubAnalysisSection = document.getElementById("github-analysis-section");
+      if (data.github_analysis) {
+        githubAnalysisSection.style.display = "block";
+        document.getElementById("github-analysis-text").innerHTML = data.github_analysis.replace(/\n/g, "<br/>").replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+      } else {
+        githubAnalysisSection.style.display = "none";
+      }
+    }
+
+    const faqAnswers = {
+      'How SkillProof ATS works?': "SkillProof ATS uses a semantic AI engine. Instead of just looking for exact keyword matches, it understands the context of your resume and compares it against the job description to find true alignment.",
+      'How is the ATS score calculated?': "Your ATS score is a weighted combination of three factors: Semantic Fit (how well your experience matches the JD), Achievement Strength (your use of measurable results), and your GitHub Technical Impact.",
+      'What is semantic fit?': "Semantic fit goes beyond keywords. It means the ATS understands that a 'Software Engineer' who built 'RESTful microservices' is highly related to a JD asking for a 'Backend Developer' with 'API' experience.",
+      'What is Achievement Strength?': "Achievement Strength evaluates the impact of your work. The engine looks for quantifiable metrics, success indicators, and clear 'action-to-result' statements in your resume bullet points rather than just a list of duties.",
+      'What is GitHub Analysis?': "GitHub Analysis is a unique feature that extracts raw coding data from your public GitHub profile and factors it into your overall ATS score to prove you actually write the code you claim on your resume.",
+      'How does GitHub Deep Scan work?': "The Deep Scan pulls your repositories, languages, and commit history via the GitHub API. The AI engine then cross-references your specific coding languages directly with the requirements in the Job Description to provide a technical confidence rating.",
+      'What is the reliability & accuracy?': "Our accuracy is very high because we don't rely on simple keyword scraping. By combining Gemini's language models with direct integrations to tools like GitHub, we capture a holistic view of your actual technical skills."
+    };
+
+    function handleFAQ(question) {
+      if (!faqAnswers[question]) return;
+
+      const msgsDiv = document.getElementById("chat-messages");
+
+      msgsDiv.insertAdjacentHTML('beforeend', `
+        <div class="chat-wrapper user">
+          <div class="chat-msg msg-user">${question}</div>
+        </div>`);
+
+      const answerText = faqAnswers[question];
+      const msgId = "msg-faq-" + Date.now();
+
+      msgsDiv.insertAdjacentHTML('beforeend', `
+        <div class="chat-wrapper ai">
+          <div id="${msgId}" class="chat-msg msg-ai"></div>
+        </div>`);
+
+      const targetEl = document.getElementById(msgId);
+      if (!targetEl) return;
+      
+      let i = 0;
+
+      function type() {
+        if (i < answerText.length) {
+          targetEl.innerHTML = answerText.substring(0, i + 1);
+          i++;
+          msgsDiv.scrollTop = msgsDiv.scrollHeight;
+          setTimeout(type, 15);
+        }
+      }
+      type();
+    }
+
+    // --- Sidebar Toggle ---
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      const isCollapsed = sidebar.classList.toggle('collapsed');
+      // Track state on body so CSS can show/hide the reopen pill
+      document.body.classList.toggle('sidebar-collapsed', isCollapsed);
+      // Overlay visible when sidebar is OPEN (!isCollapsed), hidden when CLOSED
+      overlay.classList.toggle('active', !isCollapsed);
+    }
+
+    // Collapse sidebar by default on mobile on load
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.innerWidth <= 768) {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.add('collapsed');
+        document.body.classList.add('sidebar-collapsed');
+      }
+    });
+
+    function switchTab(tabId, btnElement) {
+      document.querySelectorAll('.tab-pane').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      const selectedTab = document.getElementById('tab-' + tabId);
+      if (selectedTab) selectedTab.classList.add('active');
+
+      if (btnElement) btnElement.classList.add('active');
+
+      document.querySelector('.dashboard-main').scrollTop = 0;
+    }
+
+    // --- Login / Auth Logic ---
+    let currentAuthMode = 'signin';
+
+    function switchLoginMode(mode) {
+      currentAuthMode = mode;
+      const isSignup = mode === 'signup';
+
+      document.getElementById('btn-signin').classList.toggle('active', !isSignup);
+      document.getElementById('btn-signup').classList.toggle('active', isSignup);
+      document.getElementById('field-name').style.display = isSignup ? 'block' : 'none';
+      document.getElementById('field-confirm').style.display = isSignup ? 'block' : 'none';
+      document.getElementById('auth-submit-btn').textContent = isSignup ? 'Create Account' : 'Sign In';
+      document.querySelector('.login-title').textContent = isSignup ? 'Create Account' : 'Welcome Back';
+      document.querySelector('.login-subtitle').textContent = isSignup
+        ? 'Join SkillProof and supercharge your job search'
+        : 'Sign in to your SkillProof account';
+      document.getElementById('auth-error').textContent = '';
+      document.getElementById('auth-success').textContent = '';
+    }
+
+    function togglePassword() {
+      const input = document.getElementById('auth-password');
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+    }
+
+    async function handleAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const errorEl = document.getElementById('auth-error');
+      const successEl = document.getElementById('auth-success');
+      const btn = document.getElementById('auth-submit-btn');
+      errorEl.textContent = '';
+      successEl.textContent = '';
+
+      if (currentAuthMode === 'signup') {
+        const name = document.getElementById('auth-name').value.trim();
+        const confirm = document.getElementById('auth-confirm').value;
+        if (!name) { errorEl.textContent = 'Please enter your full name.'; return; }
+        if (password !== confirm) { errorEl.textContent = 'Passwords do not match.'; return; }
+        if (password.length < 8) { errorEl.textContent = 'Password must be at least 8 characters.'; return; }
+      }
+
+      btn.textContent = 'Please wait...';
+      btn.disabled = true;
+
+      if (!_supabase) {
+        errorEl.textContent = 'Auth not available — check internet connection.';
+        btn.textContent = currentAuthMode === 'signin' ? 'Sign In' : 'Create Account';
+        btn.disabled = false;
+        return;
+      }
+
+      try {
+        let result;
+        if (currentAuthMode === 'signup') {
+          const name = document.getElementById('auth-name').value.trim();
+          result = await _supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { full_name: name } }
+          });
+        } else {
+          result = await _supabase.auth.signInWithPassword({ email, password });
+        }
+
+        const { data, error } = result;
+        if (error) {
+          errorEl.textContent = error.message;
+        } else if (currentAuthMode === 'signup') {
+          successEl.textContent = '✓ Account created! Check your email to confirm.';
+        } else {
+          const displayName = data.user?.user_metadata?.full_name || data.user?.email;
+          successEl.textContent = `✓ Welcome back, ${displayName}!`;
+          setTimeout(() => {
+            const analysisBtn = document.querySelector('.nav-item:nth-child(2)');
+            switchTab('analysis', analysisBtn);
+          }, 1200);
+        }
+      } catch (err) {
+        errorEl.textContent = 'An unexpected error occurred. Please try again.';
+      } finally {
+        btn.textContent = currentAuthMode === 'signin' ? 'Sign In' : 'Create Account';
+        btn.disabled = false;
+      }
+    }
+
+    async function handleGoogleLogin() {
+      const errorEl = document.getElementById('auth-error');
+      errorEl.textContent = '';
+      if (!_supabase) { errorEl.textContent = 'Auth not available.'; return; }
+      const { error } = await _supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.href }
+      });
+      if (error) errorEl.textContent = error.message;
+    }
+  </script>
+
+  <!-- Supabase SDK loaded last so it doesn't block page render -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Re-initialize _supabase after SDK loads (if it wasn't ready above)
+    try {
+      if (!_supabase && window.supabase && typeof window.supabase.createClient === 'function') {
+        _supabase = window.supabase.createClient(
+          'https://qkwctkamgatfqlvgnfij.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrd2N0a2FtZ2F0ZnFsdmduZmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMTQwNjEsImV4cCI6MjA5MTg5MDA2MX0.Z-HuwIdbyLAQ3UgKCsjMA5L-NblX-m-WxVtfIzuNZAc'
+        );
+        console.log('✓ Supabase initialized after SDK load');
+      }
+    } catch(e) { console.warn('Supabase re-init failed:', e.message); }
+  </script>
+</body>
+
+</html>

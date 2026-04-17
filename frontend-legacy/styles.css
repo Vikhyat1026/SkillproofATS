@@ -111,7 +111,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Sidebar */
 .sidebar {
-  width: 320px;
+  width: 260px;
   background: rgba(11, 15, 25, 0.85);
   backdrop-filter: blur(20px);
   border-right: 1px solid var(--border-light);
@@ -129,7 +129,7 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   font-size: 1.5rem;
   font-weight: 800;
-  padding: 0 1.5rem;
+  padding: 0 1rem 0 1.5rem;
   margin-bottom: 3rem;
   color: white;
 }
@@ -544,7 +544,8 @@ textarea.form-control { resize: vertical; min-height: 120px; }
 }
 
 .chat-messages {
-  max-height: 350px;
+  min-height: 200px;
+  max-height: 480px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -701,48 +702,89 @@ textarea.form-control { resize: vertical; min-height: 120px; }
 .sidebar .chat-input-area { padding: 0.4rem; flex-direction: column; }
 .sidebar .chat-input-area input { font-size: 0.85rem; text-align: center; }
 .sidebar .chat-btn { padding: 0.4rem 0.8rem; font-size: 0.85rem; width: 100%; }
-.sidebar-nav { margin-bottom: 2rem; }
-
 /* ============================================================
-   SIDEBAR TOGGLE BUTTON
+   SIDEBAR COLLAPSE TAB (chevron peeks from right edge of sidebar)
 ============================================================ */
-.sidebar-toggle-btn {
-  position: fixed;
-  top: 1.1rem;
-  left: 1.1rem;
-  z-index: 200;
-  width: 40px;
-  height: 40px;
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  border-radius: 10px;
-  backdrop-filter: blur(12px);
+.sidebar-collapse-tab {
+  position: absolute;
+  right: -20px;         /* half-outside the sidebar's right edge */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 56px;
+  background: rgba(11, 15, 25, 0.92);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  transition: background var(--transition-fast), transform var(--transition-fast);
+  color: var(--accent-primary);
+  transition: background 0.2s, right 0.2s, box-shadow 0.2s;
+  z-index: 60;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.3);
   padding: 0;
 }
-.sidebar-toggle-btn:hover {
-  background: rgba(245, 158, 11, 0.28);
-  transform: scale(1.05);
+.sidebar-collapse-tab:hover {
+  background: rgba(245, 158, 11, 0.12);
+  right: -22px;
+  box-shadow: 6px 0 20px rgba(245, 158, 11, 0.15);
 }
-.sidebar-toggle-btn span {
-  display: block;
-  width: 18px;
-  height: 2px;
-  background: var(--accent-primary);
-  border-radius: 2px;
-  transition: all 0.3s ease;
-  transform-origin: center;
+/* Make sidebar position:relative so the tab can be absolute */
+.sidebar { position: relative; }
+/* Flip the chevron when sidebar is collapsed */
+.sidebar.collapsed .sidebar-collapse-tab svg {
+  transform: rotate(180deg);
 }
-/* Animate to X when sidebar is open (btn has .open) */
-.sidebar-toggle-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-.sidebar-toggle-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-.sidebar-toggle-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ============================================================
+   FLOATING REOPEN PILL (bottom-left, visible when collapsed)
+============================================================ */
+.sidebar-reopen-btn {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  z-index: 200;
+  width: 20px;
+  height: 56px;
+  background: rgba(11, 15, 25, 0.92);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary);
+  transition: background 0.2s, box-shadow 0.2s;
+  padding: 0;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.3);
+}
+body.sidebar-collapsed .sidebar-reopen-btn { display: flex; }
+.sidebar-reopen-btn:hover {
+  background: rgba(245, 158, 11, 0.12);
+  box-shadow: 6px 0 20px rgba(245, 158, 11, 0.15);
+}
+
+/* ============================================================
+   SAGE SECTION (wraps the chat in Analysis tab)
+============================================================ */
+.sage-section {
+  max-width: 900px;
+  margin: 2rem auto 3rem auto;
+  padding: 0 1rem;
+}
+.sage-section .chat-container {
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+}
+.sage-section .chat-messages {
+  min-height: 280px;
+  max-height: 480px;
+}
+
 
 /* ============================================================
    SIDEBAR COLLAPSED STATE
@@ -766,16 +808,17 @@ textarea.form-control { resize: vertical; min-height: 120px; }
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(3px);
+  background: rgba(0, 0, 0, 0);  /* transparent until active */
   z-index: 90;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.35s ease, background 0.35s ease;
 }
 .sidebar-overlay.active {
   opacity: 1;
   pointer-events: all;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);   /* only apply blur when actually visible */
 }
 
 /* ============================================================
@@ -787,36 +830,222 @@ textarea.form-control { resize: vertical; min-height: 120px; }
     top: 0;
     left: 0;
     height: 100vh;
-    width: 300px !important;
+    width: 280px !important;
     z-index: 100;
     transform: translateX(-100%);
   }
   .sidebar:not(.collapsed) {
     transform: translateX(0);
   }
-
-  /* Enable overlay click-dismiss on mobile */
   .sidebar-overlay { display: block; }
-
   .dashboard-main { width: 100vw; }
-
-  /* Push down hero section so toggle button doesn't overlap title */
   .hero-section { padding-top: 4.5rem !important; }
-
-  /* Stack 2-col grids to single column */
   .grid-cols-2 { grid-template-columns: 1fr !important; }
   .results-grid { grid-template-columns: 1fr !important; }
-
-  /* Full-width cards */
   #results-section .card { max-width: 100% !important; margin-top: 1.5rem !important; }
-
+  .sage-section { padding: 0 0.5rem; }
   .container { padding-left: 1rem; padding-right: 1rem; }
   .title { font-size: 2rem; }
   .subtitle { font-size: 0.95rem; }
   .btn { width: 100%; }
+  .sidebar-reopen-btn { display: flex; } /* always show reopen on mobile */
 }
 
 @media (max-width: 480px) {
   .title { font-size: 1.6rem; }
   .hero-section { text-align: center; }
+  .sage-section .chat-messages { min-height: 200px; }
 }
+
+/* ============================================================
+   LOGIN PAGE
+============================================================ */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated background glow */
+.login-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245,158,11,0.12) 0%, rgba(139,92,246,0.08) 50%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: glowPulse 4s ease-in-out infinite alternate;
+}
+@keyframes glowPulse {
+  from { opacity: 0.6; transform: translate(-50%, -50%) scale(0.95); }
+  to   { opacity: 1;   transform: translate(-50%, -50%) scale(1.05); }
+}
+
+/* Card */
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  background: rgba(15, 20, 35, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.5rem;
+  padding: 2.5rem 2rem;
+  backdrop-filter: blur(24px);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+  position: relative;
+  z-index: 1;
+}
+/* Accent top bar */
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #F59E0B, #EC4899, #8B5CF6);
+  border-radius: 1.5rem 1.5rem 0 0;
+}
+
+/* Header */
+.login-card-header { text-align: center; margin-bottom: 1.75rem; }
+.login-logo {
+  width: 56px; height: 56px;
+  background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(139,92,246,0.2));
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1rem;
+  color: var(--accent-primary);
+}
+.login-title {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 0.4rem;
+}
+.login-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Mode toggle (Sign In / Sign Up pill) */
+.login-mode-toggle {
+  display: flex;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius-full);
+  padding: 4px;
+  margin-bottom: 1.5rem;
+}
+.mode-btn {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.mode-btn.active {
+  background: var(--accent-primary);
+  color: #000;
+  font-weight: 700;
+  box-shadow: 0 2px 12px rgba(245,158,11,0.35);
+}
+
+/* Login form */
+.login-form { display: flex; flex-direction: column; gap: 1rem; }
+
+/* Password input wrapper */
+.password-wrapper {
+  position: relative;
+}
+.password-wrapper .form-control { padding-right: 3rem; }
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.password-toggle:hover { color: var(--accent-primary); }
+
+/* Auth success message */
+.auth-success-msg {
+  font-size: 0.875rem;
+  color: #34D399;
+  text-align: center;
+  min-height: 1.2em;
+  margin-bottom: 0.25rem;
+}
+
+/* Divider */
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.25rem 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+.login-divider::before, .login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+}
+
+/* Google button */
+.google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.google-btn:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.18);
+  transform: translateY(-1px);
+}
+
+/* Footnote */
+.login-footnote {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 1.25rem;
+}
+.login-footnote a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+.login-footnote a:hover { text-decoration: underline; }
+
