@@ -28,7 +28,10 @@ def get_user_repos(username: str):
         return response.json()
 
     except requests.exceptions.RequestException as e:
-        print(f"GitHub repo fetch failed: {e}")
+        status_code = e.response.status_code if e.response is not None else "Unknown"
+        print(f"[!] GitHub API Error ({status_code}): {e}")
+        if status_code == 403:
+            print("[TIP] You have likely hit a GitHub Rate Limit. Add a 'GITHUB_TOKEN' to your environment variables to fix this.")
         return []
 
 
