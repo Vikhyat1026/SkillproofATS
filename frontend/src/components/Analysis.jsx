@@ -9,8 +9,32 @@ const Analysis = ({ session, initialJD, initialResume }) => {
   const [backgroundType, setBackgroundType] = useState('');
   const [githubUsername, setGithubUsername] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('Analyzing Resume...');
   const [saveLoading, setSaveLoading] = useState(false);
   const [vaultLoading, setVaultLoading] = useState(false);
+
+  const analysisSteps = [
+    "Parsing Resume Structure...",
+    "Evaluating Semantic Alignment...",
+    "Quantifying Achievement Strength...",
+    "Scanning GitHub Deep Data...",
+    "Generating AI Insights...",
+    "Finalizing Optimization Results..."
+  ];
+
+  useEffect(() => {
+    let interval;
+    if (loading) {
+      let step = 0;
+      setLoadingMessage(analysisSteps[0]);
+      interval = setInterval(() => {
+        step = (step + 1) % analysisSteps.length;
+        setLoadingMessage(analysisSteps[step]);
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [loading]);
+
   const [error, setError] = useState('');
   const [results, setResults] = useState(null);
   const [usingVault, setUsingVault] = useState(false);
@@ -240,7 +264,21 @@ Experience with HR analytics, talent management strategies, and HR software syst
           </p>
         </section>
 
-        <div className="container card">
+        <div className="container card" style={{ position: 'relative' }}>
+          {/* Premium Loading Overlay */}
+          {loading && (
+            <div className="loading-overlay">
+              <div className="spinner-container">
+                <div className="pulse-ring"></div>
+                <div className="inner-pulse"></div>
+              </div>
+              <div className="loading-text-container">
+                <div className="loading-title">AI ANALYSIS IN PROGRESS</div>
+                <div className="loading-status">{loadingMessage}</div>
+              </div>
+            </div>
+          )}
+
           {/* Upload Zone */}
           <div 
             id="drop-zone" 
