@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   ShieldCheck, 
   Cpu, 
-  Github, 
+  Code, 
   MessageSquare, 
   Database, 
   History, 
@@ -61,7 +61,7 @@ const About = () => {
         <div className="card" style={{ textAlign: 'left', margin: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
             <div style={{ color: '#8B5CF6', background: 'rgba(139, 92, 246, 0.1)', padding: '10px', borderRadius: '12px' }}>
-              <Github size={24} />
+              <Code size={24} />
             </div>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: 'white' }}>GitHub Deep Scan</h2>
           </div>
