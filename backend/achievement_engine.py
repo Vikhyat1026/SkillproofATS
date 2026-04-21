@@ -1,9 +1,5 @@
 import re
-from sentence_transformers import SentenceTransformer, util
-
-# Load embedding model once
-model = SentenceTransformer("all-MiniLM-L6-v2")
-
+from model_utils import embedder, cosine_similarity
 
 # General achievement concepts (not specific examples)
 achievement_concepts = [
@@ -16,8 +12,8 @@ achievement_concepts = [
     "optimizing systems for better results"
 ]
 
-# Pre-compute embeddings
-concept_embeddings = model.encode(achievement_concepts, convert_to_tensor=True)
+# Pre-compute embeddings using shared ONNX engine
+concept_embeddings = [embedder.encode(c) for c in achievement_concepts]
 
 
 def split_into_sentences(text: str):
@@ -40,13 +36,14 @@ def calculate_achievement_score(resume_text: str) -> float:
         return 0.0
 
     # Encode resume sentences
-    sentence_embeddings = model.encode(sentences, convert_to_tensor=True)
+    sentence_embeddings = [embedder.encode(s) for s in sentences]
 
     similarity_scores = []
 
     for emb in sentence_embeddings:
-        similarity = util.cos_sim(emb, concept_embeddings)
-        max_score = float(similarity.max())
+        # Calculate similarity against each concept
+        scores = [cosine_similarity(emb, c_emb) for c_emb in concept_embeddings]
+        max_score = max(scores) if scores else 0.0
         similarity_scores.append(max_score)
 
     # Take top signals

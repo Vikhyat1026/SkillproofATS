@@ -14,82 +14,16 @@ Hybrid AI Engine for SkillProof ATS.
 
 import os
 import json
-import math
-import numpy as np
-import onnxruntime as ort
-from tokenizers import Tokenizer
-from huggingface_hub import hf_hub_download
 import google.generativeai as genai
 from dotenv import load_dotenv
 from skill_engine import get_missing_skills
+from model_utils import embedder, cosine_similarity
 
 load_dotenv()
 
 # --------------------------------------------------------------------------
-# ONNX Model & Tokenizer Initialization
+# Model Initialization
 # --------------------------------------------------------------------------
-
-class ONNXEmbedder:
-    def __init__(self, model_repo="Xenova/all-MiniLM-L6-v2"):
-        print(f"[INFO] Initializing lightweight ONNX engine ({model_repo})...")
-        
-        # Paths for local caching
-        cache_dir = os.path.join(os.path.expanduser("~"), ".cache", "skillproof_models")
-        os.makedirs(cache_dir, exist_ok=True)
-        
-        try:
-            # Download model and tokenizer from HF Hub
-            model_path = hf_hub_download(repo_id=model_repo, filename="onnx/model_quantized.onnx", cache_dir=cache_dir)
-            tokenizer_path = hf_hub_download(repo_id=model_repo, filename="tokenizer.json", cache_dir=cache_dir)
-            
-            # Load ONNX session (CPU optimized)
-            self.session = ort.InferenceSession(model_path)
-            self.tokenizer = Tokenizer.from_file(tokenizer_path)
-            # Enable truncation to max length (512 for MiniLM)
-            self.tokenizer.enable_truncation(max_length=512)
-            print("[OK] ONNX Semantic Engine ready.")
-        except Exception as e:
-            print(f"[ERROR] Failed to load ONNX engine: {e}")
-            raise e
-
-    def encode(self, text: str):
-        # Tokenize
-        encoded = self.tokenizer.encode(text)
-        input_ids = np.array([encoded.ids], dtype=np.int64)
-        attention_mask = np.array([encoded.attention_mask], dtype=np.int64)
-        token_type_ids = np.array([encoded.type_ids], dtype=np.int64)
-
-        # Run ONNX inference
-        inputs = {
-            "input_ids": input_ids,
-            "attention_mask": attention_mask,
-            "token_type_ids": token_type_ids
-        }
-        outputs = self.session.run(None, inputs)
-        
-        # Mean Pooling logic
-        token_embeddings = outputs[0]
-        mask = attention_mask
-        
-        # Expand mask to match embedding shape
-        input_mask_expanded = np.expand_dims(mask, -1).astype(float)
-        sum_embeddings = np.sum(token_embeddings * input_mask_expanded, 1)
-        sum_mask = np.clip(np.sum(input_mask_expanded, 1), a_min=1e-9, a_max=None)
-        
-        embedding = sum_embeddings / sum_mask
-        
-        # Normalize to unit vector (simplifies cosine similarity to dot product)
-        norm = np.linalg.norm(embedding)
-        if norm > 0:
-            embedding = embedding / norm
-            
-        return embedding[0]
-
-# Singleton instance
-try:
-    _embedder = ONNXEmbedder()
-except Exception:
-    _embedder = None
 
 # Gemini client (used for Chat and GitHub Deep Scan)
 _gemini_available = False
@@ -105,12 +39,6 @@ except Exception as e:
     print(f"[WARN] Gemini init error: {e}.")
 
 
-def cosine_similarity(v1, v2):
-    if v1 is None or v2 is None: return 0.0
-    # Since embeddings are normalized by the embedder, dot product is cosine similarity
-    return float(np.dot(v1, v2))
-
-
 # --------------------------------------------------------------------------
 # Core: Lightweight Semantic Match (Local ONNX)
 # --------------------------------------------------------------------------
@@ -119,13 +47,13 @@ def calculate_match_and_missing_skills(resume_text: str, job_description: str):
     """
     Computes a semantic match score using ONNXRuntime for zero-dependency local analysis.
     """
-    if not resume_text or not job_description or not _embedder:
+    if not resume_text or not job_description or not embedder:
         return 0.0, []
 
     try:
         # Encode both texts using the lightweight ONNX version
-        resume_emb = _embedder.encode(resume_text)
-        jd_emb = _embedder.encode(job_description)
+        resume_emb = embedder.encode(resume_text)
+        jd_emb = embedder.encode(job_description)
 
         # Calculate similarity (normalized dot product)
         similarity = cosine_similarity(resume_emb, jd_emb)

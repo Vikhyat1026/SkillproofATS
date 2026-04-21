@@ -1,7 +1,4 @@
-from sentence_transformers import SentenceTransformer, util
-
-# Load model once
-model = SentenceTransformer("all-MiniLM-L6-v2")
+from model_utils import embedder, cosine_similarity
 
 # Broad job domains
 ROLE_DOMAINS = {
@@ -27,17 +24,17 @@ ROLE_DOMAINS = {
 
 def detect_best_role(resume_text):
 
-    resume_embedding = model.encode(resume_text, convert_to_tensor=True)
+    resume_embedding = embedder.encode(resume_text)
 
     scores = {}
 
     for role, description in ROLE_DOMAINS.items():
 
-        role_embedding = model.encode(description, convert_to_tensor=True)
+        role_embedding = embedder.encode(description)
 
-        similarity = util.cos_sim(resume_embedding, role_embedding)
+        similarity = cosine_similarity(resume_embedding, role_embedding)
 
-        scores[role] = float(similarity)
+        scores[role] = similarity
 
     best_role = max(scores, key=scores.get)
 
