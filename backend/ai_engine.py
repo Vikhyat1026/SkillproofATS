@@ -14,21 +14,84 @@ Hybrid AI Engine for SkillProof ATS.
 
 import os
 import json
+import math
+import numpy as np
+import onnxruntime as ort
+from tokenizers import Tokenizer
+from huggingface_hub import hf_hub_download
 import google.generativeai as genai
 from dotenv import load_dotenv
-from sentence_transformers import SentenceTransformer, util
 from skill_engine import get_missing_skills
 
 load_dotenv()
 
 # --------------------------------------------------------------------------
-# Model Initialization
+# ONNX Model & Tokenizer Initialization
 # --------------------------------------------------------------------------
 
-# Local embedding model (100% free, no limits)
-_local_model = SentenceTransformer("all-MiniLM-L6-v2")
+class ONNXEmbedder:
+    def __init__(self, model_repo="Xenova/all-MiniLM-L6-v2"):
+        print(f"[INFO] Initializing lightweight ONNX engine ({model_repo})...")
+        
+        # Paths for local caching
+        cache_dir = os.path.join(os.path.expanduser("~"), ".cache", "skillproof_models")
+        os.makedirs(cache_dir, exist_ok=True)
+        
+        try:
+            # Download model and tokenizer from HF Hub
+            model_path = hf_hub_download(repo_id=model_repo, filename="onnx/model_quantized.onnx", cache_dir=cache_dir)
+            tokenizer_path = hf_hub_download(repo_id=model_repo, filename="tokenizer.json", cache_dir=cache_dir)
+            
+            # Load ONNX session (CPU optimized)
+            self.session = ort.InferenceSession(model_path)
+            self.tokenizer = Tokenizer.from_file(tokenizer_path)
+            # Enable truncation to max length (512 for MiniLM)
+            self.tokenizer.enable_truncation(max_length=512)
+            print("[OK] ONNX Semantic Engine ready.")
+        except Exception as e:
+            print(f"[ERROR] Failed to load ONNX engine: {e}")
+            raise e
 
-# Gemini client (only used for Chat and GitHub Deep Scan)
+    def encode(self, text: str):
+        # Tokenize
+        encoded = self.tokenizer.encode(text)
+        input_ids = np.array([encoded.ids], dtype=np.int64)
+        attention_mask = np.array([encoded.attention_mask], dtype=np.int64)
+        token_type_ids = np.array([encoded.type_ids], dtype=np.int64)
+
+        # Run ONNX inference
+        inputs = {
+            "input_ids": input_ids,
+            "attention_mask": attention_mask,
+            "token_type_ids": token_type_ids
+        }
+        outputs = self.session.run(None, inputs)
+        
+        # Mean Pooling logic
+        token_embeddings = outputs[0]
+        mask = attention_mask
+        
+        # Expand mask to match embedding shape
+        input_mask_expanded = np.expand_dims(mask, -1).astype(float)
+        sum_embeddings = np.sum(token_embeddings * input_mask_expanded, 1)
+        sum_mask = np.clip(np.sum(input_mask_expanded, 1), a_min=1e-9, a_max=None)
+        
+        embedding = sum_embeddings / sum_mask
+        
+        # Normalize to unit vector (simplifies cosine similarity to dot product)
+        norm = np.linalg.norm(embedding)
+        if norm > 0:
+            embedding = embedding / norm
+            
+        return embedding[0]
+
+# Singleton instance
+try:
+    _embedder = ONNXEmbedder()
+except Exception:
+    _embedder = None
+
+# Gemini client (used for Chat and GitHub Deep Scan)
 _gemini_available = False
 try:
     _api_key = os.getenv("GEMINI_API_KEY")
@@ -36,37 +99,39 @@ try:
         genai.configure(api_key=_api_key)
         _gemini_model = genai.GenerativeModel("gemini-1.5-flash")
         _gemini_available = True
-        print("[OK] Gemini API loaded (used for Sage Chat & Deep Scan only).")
     else:
-        print("[WARN] GEMINI_API_KEY not set. Sage Chat will use fallback mode.")
+        print("[WARN] GEMINI_API_KEY not set. Chat will use fallback mode.")
 except Exception as e:
-    print(f"[WARN] Gemini init error: {e}. Sage Chat will use fallback mode.")
+    print(f"[WARN] Gemini init error: {e}.")
+
+
+def cosine_similarity(v1, v2):
+    if v1 is None or v2 is None: return 0.0
+    # Since embeddings are normalized by the embedder, dot product is cosine similarity
+    return float(np.dot(v1, v2))
 
 
 # --------------------------------------------------------------------------
-# Core: Local Semantic Match (API-Free)
+# Core: Lightweight Semantic Match (Local ONNX)
 # --------------------------------------------------------------------------
 
 def calculate_match_and_missing_skills(resume_text: str, job_description: str):
     """
-    Computes a semantic match score and missing skills entirely offline.
-
-    Returns:
-        semantic_score (float): 0.0 - 1.0
-        missing_skills (list[str]): Up to 7 skills in JD but not in Resume.
+    Computes a semantic match score using ONNXRuntime for zero-dependency local analysis.
     """
-    if not resume_text or not job_description:
+    if not resume_text or not job_description or not _embedder:
         return 0.0, []
 
     try:
-        # Encode both texts using the local model
-        resume_emb = _local_model.encode(resume_text, convert_to_tensor=True)
-        jd_emb = _local_model.encode(job_description, convert_to_tensor=True)
+        # Encode both texts using the lightweight ONNX version
+        resume_emb = _embedder.encode(resume_text)
+        jd_emb = _embedder.encode(job_description)
 
-        # Cosine similarity (same proven approach from achievement_engine.py)
-        similarity = float(util.cos_sim(resume_emb, jd_emb)[0][0])
+        # Calculate similarity (normalized dot product)
+        similarity = cosine_similarity(resume_emb, jd_emb)
 
-        # Clamp to [0, 1] range (cosine similarity can be very slightly negative)
+        # Scale slightly to match original distribution if needed
+        # all-MiniLM-L6-v2 embeddings are typically well-separated
         semantic_score = max(0.0, min(1.0, similarity))
 
         # Extract missing skills locally via skill_engine
@@ -75,7 +140,7 @@ def calculate_match_and_missing_skills(resume_text: str, job_description: str):
         return round(semantic_score, 4), missing_skills
 
     except Exception as e:
-        print(f"Local Semantic Engine Error: {e}")
+        print(f"ONNX Semantic Engine Error: {e}")
         return 0.0, []
 
 

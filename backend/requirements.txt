@@ -1,8 +1,10 @@
 fastapi
 uvicorn
 google-generativeai
-sentence-transformers
-torch
+onnxruntime
+tokenizers
+numpy
+huggingface-hub
 pdfplumber
 python-multipart
 requests
