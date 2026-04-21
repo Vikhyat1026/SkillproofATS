@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://skillproof-ats.vercel.app/sitemap.xml
