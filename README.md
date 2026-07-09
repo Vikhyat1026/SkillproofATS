@@ -2,8 +2,6 @@
 
 SkillProof ATS is a next-generation Applicant Tracking System that replaces traditional keyword-based filtering with **Context-Aware Semantic Matching** and **Deep Achievement Quantification**.
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://skillproof-ats.vercel.app/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 🧙‍♂️ Intelligent Career Companion
 Instead of a "black box" that rejects resumes, SkillProof understands the engineering depth behind your experience.
